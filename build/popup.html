@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NiFi Super Tabs</title>
+  <style>
+    body {
+      width: 320px;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+      margin: 0;
+      background: linear-gradient(145deg, #728E9B 0%, #5f7a87 25%, #4a6670 75%, #3d535c 100%);
+      color: white;
+      overflow: hidden;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+      padding: 24px 20px 0;
+    }
+    
+    .logo {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+    
+    .title {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0;
+    }
+    
+    .subtitle {
+      font-size: 12px;
+      opacity: 0.8;
+      margin: 4px 0 0 0;
+    }
+    
+    .status {
+      background: rgba(199, 213, 221, 0.15);
+      padding: 16px;
+      border-radius: 8px;
+      margin: 15px 20px;
+      text-align: center;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(199, 213, 221, 0.3);
+    }
+    
+    .status.active {
+      background: rgba(76, 175, 80, 0.2);
+      border: 1px solid rgba(76, 175, 80, 0.5);
+    }
+    
+    .status.inactive {
+      background: rgba(255, 152, 0, 0.2);
+      border: 1px solid rgba(255, 152, 0, 0.5);
+    }
+    
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 0 20px;
+    }
+    
+    .btn {
+      padding: 12px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      background: rgba(199, 213, 221, 0.25);
+      color: white;
+      border: 1px solid rgba(199, 213, 221, 0.4);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .btn:hover {
+      background: rgba(199, 213, 221, 0.4);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    }
+    
+    .btn:active {
+      transform: translateY(0);
+    }
+    
+    .features {
+      margin-top: 20px;
+      padding: 0 20px;
+    }
+    
+    .feature-list {
+      list-style: none;
+      padding: 0;
+      margin: 10px 0;
+    }
+    
+    .feature-list li {
+      padding: 6px 0;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .feature-icon {
+      width: 16px;
+      text-align: center;
+    }
+    
+    .footer {
+      margin-top: 20px;
+      padding: 15px 20px 20px;
+      border-top: 1px solid rgba(199, 213, 221, 0.3);
+      text-align: center;
+      font-size: 11px;
+      opacity: 0.7;
+    }
+    
+    /* Estilos para a seção de configurações */
+    .config-section {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(145deg, #728E9B 0%, #5f7a87 25%, #4a6670 75%, #3d535c 100%);
+      z-index: 1000;
+      overflow-y: auto;
+    }
+    
+    .config-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      border-bottom: 1px solid rgba(199, 213, 221, 0.3);
+    }
+    
+    .config-header h3 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    .btn-close {
+      background: rgba(244, 67, 54, 0.2);
+      border: 1px solid rgba(244, 67, 54, 0.4);
+      color: #FF8A80;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+      transition: all 0.2s;
+    }
+    
+    .btn-close:hover {
+      background: rgba(244, 67, 54, 0.3);
+      transform: scale(1.1);
+    }
+    
+    .config-content {
+      padding: 20px;
+    }
+    
+    .config-group {
+      margin-bottom: 24px;
+    }
+    
+    .config-group h4 {
+      margin: 0 0 16px 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: #C7D5DD;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .config-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding: 12px;
+      background: rgba(199, 213, 221, 0.1);
+      border-radius: 8px;
+      border-left: 3px solid rgba(199, 213, 221, 0.3);
+    }
+    
+    .config-label {
+      flex: 1;
+    }
+    
+    .label-title {
+      font-weight: 500;
+      margin-bottom: 2px;
+      font-size: 13px;
+    }
+    
+    .label-desc {
+      font-size: 11px;
+      opacity: 0.8;
+      line-height: 1.3;
+    }
+    
+    /* Switch/Toggle Button Styles */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+    
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(255, 255, 255, 0.2);
+      transition: 0.3s;
+      border-radius: 24px;
+      border: 1px solid rgba(199, 213, 221, 0.3);
+    }
+    
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 2px;
+      bottom: 2px;
+      background-color: white;
+      transition: 0.3s;
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    
+    input:checked + .slider {
+      background-color: rgba(76, 175, 80, 0.6);
+      border-color: rgba(76, 175, 80, 0.8);
+    }
+    
+    input:focus + .slider {
+      box-shadow: 0 0 1px rgba(76, 175, 80, 0.8);
+    }
+    
+    input:checked + .slider:before {
+      transform: translateX(20px);
+    }
+    
+    input:disabled + .slider {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    input:disabled + .slider:before {
+      opacity: 0.7;
+    }
+    
+    .config-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(199, 213, 221, 0.2);
+    }
+    
+    .btn-primary {
+      background: rgba(76, 175, 80, 0.2) !important;
+      border: 1px solid rgba(76, 175, 80, 0.4) !important;
+      color: #81C784 !important;
+      flex: 1;
+    }
+    
+    .btn-primary:hover {
+      background: rgba(76, 175, 80, 0.3) !important;
+    }
+    
+    .btn-secondary {
+      background: rgba(255, 152, 0, 0.2) !important;
+      border: 1px solid rgba(255, 152, 0, 0.4) !important;
+      color: #FFB74D !important;
+      flex: 1;
+    }
+    
+    .btn-secondary:hover {
+      background: rgba(255, 152, 0, 0.3) !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">⚡</div>
+    <h1 class="title">NiFi Super Tabs</h1>
+    <p class="subtitle">Turbine seu Apache NiFi</p>
+  </div>
+  
+  <div id="status" class="status inactive">
+    <div id="status-text">Acesse uma página do NiFi para ativar</div>
+  </div>
+  
+  <div class="controls">
+    <button class="btn" id="toggle-sidebar">
+      <span id="sidebar-status">⚡ Abrir Painel Lateral</span>
+    </button>
+    
+    <button class="btn" id="refresh-page">
+      ↻ Recarregar Página
+    </button>
+    
+    <button class="btn" id="open-options">
+      ⚙️ Configurações
+    </button>
+  </div>
+  
+  <!-- Seção de Configurações -->
+  <div id="config-section" class="config-section" style="display: none;">
+    <div class="config-header">
+      <h3>⚙️ Configurações</h3>
+      <button class="btn-close" id="close-config">✕</button>
+    </div>
+    
+    <div class="config-content">
+      <div class="config-group">
+        <h4>📱 Exibição da Sidebar</h4>
+        
+        <div class="config-item">
+          <label class="switch">
+            <input type="checkbox" id="auto-show-sidebar" checked>
+            <span class="slider"></span>
+          </label>
+          <div class="config-label">
+            <div class="label-title">Mostrar automaticamente</div>
+            <div class="label-desc">Abre a sidebar automaticamente ao clicar em componentes</div>
+          </div>
+        </div>
+        
+        <div class="config-item">
+          <label class="switch">
+            <input type="checkbox" id="remember-sidebar-state" checked>
+            <span class="slider"></span>
+          </label>
+          <div class="config-label">
+            <div class="label-title">Lembrar estado</div>
+            <div class="label-desc">Mantém a sidebar aberta/fechada entre sessões</div>
+          </div>
+        </div>
+        
+        <div class="config-item">
+          <label class="switch">
+            <input type="checkbox" id="auto-hide-sidebar" disabled>
+            <span class="slider"></span>
+          </label>
+          <div class="config-label">
+            <div class="label-title">Fechar automaticamente</div>
+            <div class="label-desc">Fecha a sidebar ao clicar fora dela</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="config-group">
+        <h4>🎯 Funcionalidades</h4>
+        
+        <div class="config-item">
+          <label class="switch">
+            <input type="checkbox" id="show-enhancement-icons" checked>
+            <span class="slider"></span>
+          </label>
+          <div class="config-label">
+            <div class="label-title">Ícones de enhancement</div>
+            <div class="label-desc">Mostra ícones nos componentes do NiFi</div>
+          </div>
+        </div>
+        
+        <div class="config-item">
+          <label class="switch">
+            <input type="checkbox" id="enable-hotkeys" checked>
+            <span class="slider"></span>
+          </label>
+          <div class="config-label">
+            <div class="label-title">Atalhos de teclado</div>
+            <div class="label-desc">Habilita Ctrl+Shift+S para toggle da sidebar</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="config-actions">
+        <button class="btn btn-primary" id="save-config">
+          💾 Salvar Configurações
+        </button>
+        <button class="btn btn-secondary" id="reset-config">
+          🔄 Restaurar Padrões
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="features">
+    <h3 style="margin: 0 0 10px 0; font-size: 14px;">✨ Recursos:</h3>
+    <ul class="feature-list">
+      <li>
+        <span class="feature-icon">📋</span>
+        Painel lateral inteligente
+      </li>
+      <li>
+        <span class="feature-icon">💡</span>
+        Sugestões contextuais
+      </li>
+      <li>
+        <span class="feature-icon">🎯</span>
+        Ícones nos FlowFiles
+      </li>
+      <li>
+        <span class="feature-icon">🔍</span>
+        Análise de proveniência
+      </li>
+      <li>
+        <span class="feature-icon">⚡</span>
+        Hotkeys (Ctrl+Shift+S)
+      </li>
+    </ul>
+  </div>
+  
+  <div class="footer">
+    <div>Versão 1.0.0</div>
+    <div>Feito com ❤️ para NiFi</div>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>

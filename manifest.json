@@ -1,0 +1,67 @@
+{
+  "manifest_version": 3,
+  "name": "NiFi Super Tabs",
+  "version": "2.1.0",
+  "description": "Turbine seu Apache NiFi com IA Contextual local, aba lateral inteligente e ícones nos FlowFiles",
+  
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting"
+  ],
+  
+  "host_permissions": [
+    "*://*/*nifi*",
+    "*://localhost:*/*",
+    "*://127.0.0.1:*/*"
+  ],
+  
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*/*nifi*",
+        "*://localhost:*/*",
+        "*://127.0.0.1:*/*"
+      ],
+      "js": [
+        "nifi-utils.js",
+        "content-script.js"
+      ],
+      "css": [
+        "sidebar.css"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  
+  "background": {
+    "service_worker": "background.js"
+  },
+  
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "NiFi Super Tabs - IA Edition",
+    "default_icon": {
+      "16": "icons/nifi-drop.svg"
+    }
+  },
+  
+  "icons": {
+    "16": "icons/nifi-drop.svg",
+    "32": "icons/nifi-drop.svg",
+    "48": "icons/nifi-drop.svg",
+    "128": "icons/nifi-drop.svg"
+  },
+  
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "sidebar.html",
+        "sidebar.js",
+        "icons/*.png",
+        "flowfile-icons/*.svg"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

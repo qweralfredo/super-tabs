@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="nifiGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#728E9B"/>
+      <stop offset="100%" style="stop-color:#C7D5DD"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Fundo -->
+  <circle cx="64" cy="64" r="60" fill="url(#nifiGradient)" stroke="#728E9B" stroke-width="2"/>
+  
+  <!-- Símbolo NiFi - Flow -->
+  <path d="M30 40 Q40 30, 50 40 T70 40 Q80 30, 90 40 L90 50 Q80 60, 70 50 T50 50 Q40 60, 30 50 Z" 
+        fill="white" opacity="0.9"/>
+  
+  <!-- Linhas de conexão -->
+  <path d="M25 60 L35 60 M40 60 L50 60 M55 60 L65 60 M70 60 L80 60 M85 60 L95 60" 
+        stroke="white" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+  
+  <!-- Símbolo de dados -->
+  <circle cx="45" cy="80" r="8" fill="white" opacity="0.9"/>
+  <circle cx="64" cy="80" r="8" fill="white" opacity="0.9"/>
+  <circle cx="83" cy="80" r="8" fill="white" opacity="0.9"/>
+  
+  <!-- Texto Super -->
+  <text x="64" y="105" font-family="Arial, sans-serif" font-size="12" font-weight="bold" 
+        text-anchor="middle" fill="white">SUPER</text>
+</svg>
