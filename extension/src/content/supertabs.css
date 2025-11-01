@@ -1,0 +1,414 @@
+/* SuperTabs - Main CSS Variables and Base Styles */
+/* NiFi Design System Integration */
+
+:root {
+  /* NiFi Color Palette */
+  --nifi-primary-blue: #2D4F91;
+  --nifi-secondary-blue: #4A90E2;
+  --nifi-accent-blue: #5BA0F2;
+  --nifi-light-blue: #E8F0FE;
+  
+  /* NiFi Grays */
+  --nifi-gray-dark: #333333;
+  --nifi-gray-medium: #666666;
+  --nifi-gray-light: #999999;
+  --nifi-gray-lighter: #F5F5F5;
+  --nifi-gray-lightest: #FAFAFA;
+  
+  /* NiFi Status Colors */
+  --nifi-success-green: #5CB85C;
+  --nifi-warning-orange: #F0AD4E;
+  --nifi-error-red: #D9534F;
+  --nifi-info-blue: #5BC0DE;
+  
+  /* NiFi Background */
+  --nifi-background: #FFFFFF;
+  --nifi-surface: #F8F9FA;
+  --nifi-border: #E1E5E9;
+  
+  /* NiFi Typography */
+  --nifi-font-family: 'Roboto', 'Arial', sans-serif;
+  --nifi-font-size-xs: 11px;
+  --nifi-font-size-small: 12px;
+  --nifi-font-size-base: 14px;
+  --nifi-font-size-lg: 16px;
+  --nifi-font-size-header: 18px;
+  --nifi-font-weight-normal: 400;
+  --nifi-font-weight-medium: 500;
+  --nifi-font-weight-bold: 600;
+  
+  /* NiFi Spacing */
+  --nifi-spacing-xs: 4px;
+  --nifi-spacing-sm: 8px;
+  --nifi-spacing-md: 12px;
+  --nifi-spacing-lg: 16px;
+  --nifi-spacing-xl: 24px;
+  --nifi-spacing-xxl: 32px;
+  
+  /* NiFi Border Radius */
+  --nifi-border-radius: 4px;
+  --nifi-border-radius-large: 8px;
+  --nifi-border-radius-round: 50%;
+  
+  /* NiFi Shadows */
+  --nifi-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --nifi-shadow-md: 0 2px 6px rgba(0, 0, 0, 0.15);
+  --nifi-shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.2);
+  
+  /* NiFi Transitions */
+  --nifi-transition: all 0.2s ease-in-out;
+  --nifi-transition-fast: all 0.1s ease-in-out;
+  --nifi-transition-slow: all 0.3s ease-in-out;
+  
+  /* SuperTabs Z-Index Scale */
+  --supertabs-z-sidebar: 10000;
+  --supertabs-z-modal: 15000;
+  --supertabs-z-tooltip: 20000;
+  --supertabs-z-overlay: 25000;
+}
+
+/* Base SuperTabs Styles */
+.supertabs-component {
+  font-family: var(--nifi-font-family);
+  font-size: var(--nifi-font-size-base);
+  color: var(--nifi-gray-dark);
+  line-height: 1.4;
+  box-sizing: border-box;
+}
+
+.supertabs-component *,
+.supertabs-component *:before,
+.supertabs-component *:after {
+  box-sizing: border-box;
+}
+
+/* Button Styles */
+.supertabs-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--nifi-spacing-sm);
+  padding: var(--nifi-spacing-sm) var(--nifi-spacing-md);
+  background: var(--nifi-primary-blue);
+  color: white;
+  border: none;
+  border-radius: var(--nifi-border-radius);
+  font-family: var(--nifi-font-family);
+  font-size: var(--nifi-font-size-base);
+  font-weight: var(--nifi-font-weight-medium);
+  cursor: pointer;
+  transition: var(--nifi-transition);
+  text-decoration: none;
+  min-height: 32px;
+}
+
+.supertabs-button:hover {
+  background: #1e3a6b;
+  transform: translateY(-1px);
+  box-shadow: var(--nifi-shadow-md);
+}
+
+.supertabs-button:active {
+  transform: translateY(0);
+  box-shadow: var(--nifi-shadow-sm);
+}
+
+.supertabs-button:disabled {
+  background: var(--nifi-gray-light);
+  color: var(--nifi-gray-medium);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Button Variants */
+.supertabs-button.secondary {
+  background: var(--nifi-background);
+  color: var(--nifi-primary-blue);
+  border: 1px solid var(--nifi-primary-blue);
+}
+
+.supertabs-button.secondary:hover {
+  background: var(--nifi-light-blue);
+}
+
+.supertabs-button.success {
+  background: var(--nifi-success-green);
+}
+
+.supertabs-button.warning {
+  background: var(--nifi-warning-orange);
+}
+
+.supertabs-button.error {
+  background: var(--nifi-error-red);
+}
+
+.supertabs-button.small {
+  padding: var(--nifi-spacing-xs) var(--nifi-spacing-sm);
+  font-size: var(--nifi-font-size-small);
+  min-height: 28px;
+}
+
+.supertabs-button.large {
+  padding: var(--nifi-spacing-md) var(--nifi-spacing-lg);
+  font-size: var(--nifi-font-size-lg);
+  min-height: 40px;
+}
+
+/* Input Styles */
+.supertabs-input {
+  width: 100%;
+  padding: var(--nifi-spacing-sm) var(--nifi-spacing-md);
+  border: 1px solid var(--nifi-border);
+  border-radius: var(--nifi-border-radius);
+  font-family: var(--nifi-font-family);
+  font-size: var(--nifi-font-size-base);
+  background: var(--nifi-background);
+  color: var(--nifi-gray-dark);
+  transition: var(--nifi-transition);
+}
+
+.supertabs-input:focus {
+  outline: none;
+  border-color: var(--nifi-primary-blue);
+  box-shadow: 0 0 0 2px rgba(45, 79, 145, 0.2);
+}
+
+.supertabs-input:disabled {
+  background: var(--nifi-gray-lighter);
+  color: var(--nifi-gray-medium);
+  cursor: not-allowed;
+}
+
+.supertabs-textarea {
+  resize: vertical;
+  min-height: 80px;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+}
+
+/* Card Styles */
+.supertabs-card {
+  background: var(--nifi-background);
+  border: 1px solid var(--nifi-border);
+  border-radius: var(--nifi-border-radius-large);
+  padding: var(--nifi-spacing-lg);
+  box-shadow: var(--nifi-shadow-sm);
+  transition: var(--nifi-transition);
+}
+
+.supertabs-card:hover {
+  box-shadow: var(--nifi-shadow-md);
+}
+
+.supertabs-card-header {
+  margin-bottom: var(--nifi-spacing-md);
+  padding-bottom: var(--nifi-spacing-md);
+  border-bottom: 1px solid var(--nifi-border);
+}
+
+.supertabs-card-title {
+  margin: 0;
+  font-size: var(--nifi-font-size-header);
+  font-weight: var(--nifi-font-weight-medium);
+  color: var(--nifi-gray-dark);
+}
+
+.supertabs-card-body {
+  margin-bottom: var(--nifi-spacing-md);
+}
+
+.supertabs-card-footer {
+  margin-top: var(--nifi-spacing-md);
+  padding-top: var(--nifi-spacing-md);
+  border-top: 1px solid var(--nifi-border);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--nifi-spacing-sm);
+}
+
+/* Loading States */
+.supertabs-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--nifi-spacing-sm);
+  color: var(--nifi-gray-medium);
+  font-size: var(--nifi-font-size-small);
+}
+
+.supertabs-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--nifi-gray-lighter);
+  border-top: 2px solid var(--nifi-primary-blue);
+  border-radius: 50%;
+  animation: supertabs-spin 1s linear infinite;
+}
+
+@keyframes supertabs-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Alert/Message Styles */
+.supertabs-alert {
+  padding: var(--nifi-spacing-md);
+  border-radius: var(--nifi-border-radius);
+  margin-bottom: var(--nifi-spacing-md);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--nifi-spacing-sm);
+}
+
+.supertabs-alert.info {
+  background: rgba(91, 192, 222, 0.1);
+  border: 1px solid var(--nifi-info-blue);
+  color: #31708f;
+}
+
+.supertabs-alert.success {
+  background: rgba(92, 184, 92, 0.1);
+  border: 1px solid var(--nifi-success-green);
+  color: #3c763d;
+}
+
+.supertabs-alert.warning {
+  background: rgba(240, 173, 78, 0.1);
+  border: 1px solid var(--nifi-warning-orange);
+  color: #8a6d3b;
+}
+
+.supertabs-alert.error {
+  background: rgba(217, 83, 79, 0.1);
+  border: 1px solid var(--nifi-error-red);
+  color: #a94442;
+}
+
+/* Utility Classes */
+.supertabs-hidden {
+  display: none !important;
+}
+
+.supertabs-visible {
+  display: block !important;
+}
+
+.supertabs-text-center {
+  text-align: center;
+}
+
+.supertabs-text-right {
+  text-align: right;
+}
+
+.supertabs-flex {
+  display: flex;
+}
+
+.supertabs-flex-column {
+  flex-direction: column;
+}
+
+.supertabs-flex-wrap {
+  flex-wrap: wrap;
+}
+
+.supertabs-justify-center {
+  justify-content: center;
+}
+
+.supertabs-justify-between {
+  justify-content: space-between;
+}
+
+.supertabs-align-center {
+  align-items: center;
+}
+
+.supertabs-gap-sm {
+  gap: var(--nifi-spacing-sm);
+}
+
+.supertabs-gap-md {
+  gap: var(--nifi-spacing-md);
+}
+
+.supertabs-gap-lg {
+  gap: var(--nifi-spacing-lg);
+}
+
+.supertabs-margin-bottom {
+  margin-bottom: var(--nifi-spacing-md);
+}
+
+.supertabs-margin-top {
+  margin-top: var(--nifi-spacing-md);
+}
+
+.supertabs-padding {
+  padding: var(--nifi-spacing-md);
+}
+
+.supertabs-padding-sm {
+  padding: var(--nifi-spacing-sm);
+}
+
+.supertabs-padding-lg {
+  padding: var(--nifi-spacing-lg);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .supertabs-component {
+    font-size: var(--nifi-font-size-small);
+  }
+  
+  .supertabs-button {
+    padding: var(--nifi-spacing-xs) var(--nifi-spacing-sm);
+    font-size: var(--nifi-font-size-small);
+  }
+  
+  .supertabs-card {
+    padding: var(--nifi-spacing-md);
+  }
+}
+
+/* Animation Classes */
+.supertabs-fade-in {
+  animation: supertabs-fadeIn 0.3s ease-in-out;
+}
+
+.supertabs-slide-in-right {
+  animation: supertabs-slideInRight 0.3s ease-in-out;
+}
+
+.supertabs-slide-in-left {
+  animation: supertabs-slideInLeft 0.3s ease-in-out;
+}
+
+@keyframes supertabs-fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes supertabs-slideInRight {
+  from { 
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes supertabs-slideInLeft {
+  from { 
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

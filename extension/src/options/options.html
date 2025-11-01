@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SuperTabs - Configurações</title>
+    <link rel="stylesheet" href="../content/nifi-theme.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: var(--nifi-font-family);
+            background-color: var(--nifi-canvas-background);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: var(--nifi-spacing-lg);
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--nifi-primary-blue), var(--nifi-secondary-blue));
+            color: white;
+            padding: var(--nifi-spacing-xl);
+            margin: calc(-1 * var(--nifi-spacing-lg));
+            margin-bottom: var(--nifi-spacing-xl);
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: var(--nifi-font-weight-medium);
+        }
+
+        .header p {
+            margin: var(--nifi-spacing-sm) 0 0 0;
+            opacity: 0.9;
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--nifi-spacing-lg);
+            margin-bottom: var(--nifi-spacing-xl);
+        }
+
+        .settings-section {
+            background: var(--nifi-background);
+            border-radius: var(--nifi-border-radius-large);
+            box-shadow: 0 4px 8px var(--nifi-shadow);
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: var(--nifi-gray-lighter);
+            padding: var(--nifi-spacing-md);
+            border-bottom: 1px solid var(--nifi-border);
+        }
+
+        .section-header h2 {
+            margin: 0;
+            font-size: var(--nifi-font-size-header);
+            color: var(--nifi-primary-blue);
+            display: flex;
+            align-items: center;
+        }
+
+        .section-header .icon {
+            margin-right: var(--nifi-spacing-sm);
+            font-size: 20px;
+        }
+
+        .section-content {
+            padding: var(--nifi-spacing-lg);
+        }
+
+        .form-group {
+            margin-bottom: var(--nifi-spacing-lg);
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--nifi-spacing-md);
+        }
+
+        .form-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-description {
+            font-size: var(--nifi-font-size-small);
+            color: var(--nifi-gray-medium);
+            margin-top: var(--nifi-spacing-xs);
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 48px;
+            height: 28px;
+            background-color: var(--nifi-gray-light);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: var(--nifi-transition);
+        }
+
+        .toggle-switch.active {
+            background-color: var(--nifi-primary-blue);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 24px;
+            height: 24px;
+            background-color: white;
+            border-radius: 50%;
+            transition: var(--nifi-transition);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .toggle-switch.active::after {
+            left: 22px;
+        }
+
+        .password-input-group {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: var(--nifi-spacing-sm);
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--nifi-gray-medium);
+            font-size: 16px;
+        }
+
+        .tabs {
+            margin-bottom: var(--nifi-spacing-xl);
+        }
+
+        .tab-content.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: var(--nifi-spacing-md);
+            justify-content: center;
+            margin-top: var(--nifi-spacing-xl);
+            padding: var(--nifi-spacing-lg);
+            background: var(--nifi-background);
+            border-radius: var(--nifi-border-radius-large);
+            box-shadow: 0 4px 8px var(--nifi-shadow);
+        }
+
+        .import-export-section {
+            display: flex;
+            gap: var(--nifi-spacing-md);
+            margin-top: var(--nifi-spacing-md);
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .status-messages {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+        }
+
+        .status-message {
+            padding: var(--nifi-spacing-md);
+            margin-bottom: var(--nifi-spacing-sm);
+            border-radius: var(--nifi-border-radius);
+            box-shadow: 0 4px 8px var(--nifi-shadow);
+            min-width: 300px;
+            animation: slideInRight 0.3s ease-in-out;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .api-test-section {
+            margin-top: var(--nifi-spacing-md);
+            padding: var(--nifi-spacing-md);
+            background: var(--nifi-gray-lighter);
+            border-radius: var(--nifi-border-radius);
+        }
+
+        .api-test-result {
+            margin-top: var(--nifi-spacing-sm);
+            padding: var(--nifi-spacing-sm);
+            border-radius: var(--nifi-border-radius);
+            font-family: monospace;
+            font-size: var(--nifi-font-size-small);
+        }
+
+        .api-test-result.success {
+            background: rgba(92, 184, 92, 0.1);
+            border: 1px solid var(--nifi-success-green);
+            color: var(--nifi-success-green);
+        }
+
+        .api-test-result.error {
+            background: rgba(217, 83, 79, 0.1);
+            border: 1px solid var(--nifi-danger-red);
+            color: var(--nifi-danger-red);
+        }
+
+        @media (max-width: 768px) {
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: var(--nifi-spacing-md);
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚡ SuperTabs - Configurações</h1>
+            <p>Configure sua experiência com o Apache NiFi Assistant</p>
+        </div>
+
+        <!-- Main Settings Grid -->
+        <div class="settings-grid">
+            <!-- NiFi Connection Settings -->
+            <div class="settings-section">
+                <div class="section-header">
+                    <h2><span class="icon">🔗</span>Conexão NiFi</h2>
+                </div>
+                <div class="section-content">
+                    <div class="form-group">
+                        <label class="supertabs-label" for="nifi-url">URL Base do NiFi</label>
+                        <input type="text" id="nifi-url" class="supertabs-input" placeholder="https://localhost:8443/nifi-api">
+                        <div class="form-description">URL da API REST do Apache NiFi</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="supertabs-label" for="nifi-username">Usuário</label>
+                        <input type="text" id="nifi-username" class="supertabs-input" placeholder="admin">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="supertabs-label" for="nifi-password">Senha</label>
+                        <div class="password-input-group">
+                            <input type="password" id="nifi-password" class="supertabs-input" placeholder="Digite a senha">
+                            <button type="button" class="password-toggle" onclick="togglePassword('nifi-password')">👁️</button>
+                        </div>
+                    </div>
+
+                    <div class="api-test-section">
+                        <button class="supertabs-btn" id="test-nifi-connection">Testar Conexão</button>
+                        <div id="nifi-test-result" class="api-test-result hidden"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Configuration -->
+            <div class="settings-section">
+                <div class="section-header">
+                    <h2><span class="icon">🤖</span>Configuração IA</h2>
+                </div>
+                <div class="section-content">
+                    <div class="form-group">
+                        <label class="supertabs-label" for="phi3-api-key">Chave API PHI-3</label>
+                        <div class="password-input-group">
+                            <input type="password" id="phi3-api-key" class="supertabs-input" placeholder="Digite a chave API">
+                            <button type="button" class="password-toggle" onclick="togglePassword('phi3-api-key')">👁️</button>
+                        </div>
+                        <div class="form-description">Chave para o modelo PHI-3 (padrão)</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="supertabs-label" for="claude-api-key">Chave API Claude</label>
+                        <div class="password-input-group">
+                            <input type="password" id="claude-api-key" class="supertabs-input" placeholder="Digite a chave API">
+                            <button type="button" class="password-toggle" onclick="togglePassword('claude-api-key')">👁️</button>
+                        </div>
+                        <div class="form-description">Chave para Claude Sonnet 4.5 (opcional)</div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div>
+                            <strong>Preferir Claude</strong>
+                            <div class="form-description">Usar Claude quando disponível para construtores</div>
+                        </div>
+                        <div class="toggle-switch" id="prefer-claude-toggle"></div>
+                    </div>
+
+                    <div class="api-test-section">
+                        <button class="supertabs-btn" id="test-ai-connection">Testar IA</button>
+                        <div id="ai-test-result" class="api-test-result hidden"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features Configuration -->
+            <div class="settings-section">
+                <div class="section-header">
+                    <h2><span class="icon">⚙️</span>Funcionalidades</h2>
+                </div>
+                <div class="section-content">
+                    <div class="form-row">
+                        <div>
+                            <strong>Abertura Automática</strong>
+                            <div class="form-description">Abrir sidebar automaticamente ao clicar em componentes</div>
+                        </div>
+                        <div class="toggle-switch" id="auto-open-toggle"></div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div>
+                            <strong>Alinhamento Automático</strong>
+                            <div class="form-description">Habilitar ferramenta de alinhamento automático</div>
+                        </div>
+                        <div class="toggle-switch" id="alignment-toggle"></div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div>
+                            <strong>Expression Language</strong>
+                            <div class="form-description">Habilitar gerador de Expression Language</div>
+                        </div>
+                        <div class="toggle-switch" id="expression-toggle"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Settings -->
+            <div class="settings-section">
+                <div class="section-header">
+                    <h2><span class="icon">🔧</span>Avançado</h2>
+                </div>
+                <div class="section-content">
+                    <div class="form-row">
+                        <div>
+                            <strong>Modo Debug</strong>
+                            <div class="form-description">Ativar logs detalhados para debugging</div>
+                        </div>
+                        <div class="toggle-switch" id="debug-toggle"></div>
+                    </div>
+                    
+                    <div class="import-export-section">
+                        <button class="supertabs-btn" id="export-settings">Exportar Configurações</button>
+                        <div class="file-input-wrapper">
+                            <input type="file" id="import-file" accept=".json">
+                            <button class="supertabs-btn" onclick="document.getElementById('import-file').click()">Importar Configurações</button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" style="margin-top: var(--nifi-spacing-lg);">
+                        <button class="supertabs-btn danger" id="reset-settings">Resetar Todas as Configurações</button>
+                        <div class="form-description">⚠️ Esta ação não pode ser desfeita</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button class="supertabs-btn primary" id="save-settings">Salvar Configurações</button>
+            <button class="supertabs-btn" id="cancel-settings">Cancelar</button>
+            <button class="supertabs-btn" id="test-all">Testar Tudo</button>
+        </div>
+    </div>
+
+    <!-- Status Messages Container -->
+    <div class="status-messages" id="status-messages"></div>
+
+    <script src="../utils/storage.js"></script>
+    <script src="../utils/logger.js"></script>
+    <script src="options.js"></script>
+</body>
+</html>

@@ -1,0 +1,171 @@
+/* NiFi Theme CSS Variables and Base Styles */
+
+:root {
+  /* Primary Colors */
+  --nifi-primary-blue: #2d4f91;
+  --nifi-secondary-blue: #5da7db;
+  --nifi-accent-blue: #e8f4fd;
+  
+  /* Status Colors */
+  --nifi-success-green: #5cb85c;
+  --nifi-warning-orange: #f0ad4e;
+  --nifi-danger-red: #d9534f;
+  --nifi-info-blue: #5bc0de;
+  
+  /* Gray Scale */
+  --nifi-gray-darkest: #1a1a1a;
+  --nifi-gray-darker: #333333;
+  --nifi-gray-dark: #666666;
+  --nifi-gray-medium: #999999;
+  --nifi-gray-light: #cccccc;
+  --nifi-gray-lighter: #f5f5f5;
+  --nifi-gray-lightest: #fafafa;
+  
+  /* Background Colors */
+  --nifi-background: #ffffff;
+  --nifi-background-secondary: #f8f9fa;
+  --nifi-surface: #ffffff;
+  
+  /* Border */
+  --nifi-border: #dddddd;
+  --nifi-border-light: #e9ecef;
+  
+  /* Typography */
+  --nifi-font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --nifi-font-size-xs: 10px;
+  --nifi-font-size-small: 12px;
+  --nifi-font-size-base: 13px;
+  --nifi-font-size-header: 14px;
+  --nifi-font-size-large: 16px;
+  
+  --nifi-font-weight-normal: 400;
+  --nifi-font-weight-medium: 500;
+  --nifi-font-weight-semibold: 600;
+  --nifi-font-weight-bold: 700;
+  
+  /* Spacing */
+  --nifi-spacing-xs: 4px;
+  --nifi-spacing-sm: 8px;
+  --nifi-spacing-md: 12px;
+  --nifi-spacing-lg: 16px;
+  --nifi-spacing-xl: 24px;
+  
+  /* Border Radius */
+  --nifi-border-radius: 4px;
+  --nifi-border-radius-large: 8px;
+  --nifi-border-radius-round: 50%;
+  
+  /* Shadows */
+  --nifi-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --nifi-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --nifi-shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.15);
+  
+  /* Transitions */
+  --nifi-transition: all 0.2s ease-in-out;
+  --nifi-transition-fast: all 0.1s ease-in-out;
+}
+
+/* Base Reset */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--nifi-font-family);
+  font-size: var(--nifi-font-size-base);
+  line-height: 1.4;
+  color: var(--nifi-gray-dark);
+  background-color: var(--nifi-background);
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-weight: var(--nifi-font-weight-medium);
+  color: var(--nifi-gray-dark);
+}
+
+h1 { font-size: var(--nifi-font-size-large); }
+h2, h3 { font-size: var(--nifi-font-size-header); }
+h4, h5, h6 { font-size: var(--nifi-font-size-base); }
+
+p {
+  margin: 0 0 var(--nifi-spacing-sm) 0;
+}
+
+/* Buttons */
+.nifi-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--nifi-spacing-sm) var(--nifi-spacing-md);
+  border: 1px solid var(--nifi-border);
+  border-radius: var(--nifi-border-radius);
+  background-color: var(--nifi-background);
+  color: var(--nifi-gray-dark);
+  font-size: var(--nifi-font-size-base);
+  font-weight: var(--nifi-font-weight-medium);
+  text-decoration: none;
+  cursor: pointer;
+  transition: var(--nifi-transition);
+}
+
+.nifi-btn:hover {
+  background-color: var(--nifi-gray-lighter);
+  border-color: var(--nifi-primary-blue);
+}
+
+.nifi-btn.primary {
+  background-color: var(--nifi-primary-blue);
+  border-color: var(--nifi-primary-blue);
+  color: white;
+}
+
+.nifi-btn.primary:hover {
+  background-color: var(--nifi-secondary-blue);
+  border-color: var(--nifi-secondary-blue);
+}
+
+/* Form Elements */
+.nifi-input {
+  width: 100%;
+  padding: var(--nifi-spacing-sm);
+  border: 1px solid var(--nifi-border);
+  border-radius: var(--nifi-border-radius);
+  font-size: var(--nifi-font-size-base);
+  font-family: var(--nifi-font-family);
+  transition: var(--nifi-transition);
+}
+
+.nifi-input:focus {
+  outline: none;
+  border-color: var(--nifi-primary-blue);
+  box-shadow: 0 0 0 2px rgba(45, 79, 145, 0.1);
+}
+
+/* Utility Classes */
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+.mb-xs { margin-bottom: var(--nifi-spacing-xs); }
+.mb-sm { margin-bottom: var(--nifi-spacing-sm); }
+.mb-md { margin-bottom: var(--nifi-spacing-md); }
+.mb-lg { margin-bottom: var(--nifi-spacing-lg); }
+
+.p-xs { padding: var(--nifi-spacing-xs); }
+.p-sm { padding: var(--nifi-spacing-sm); }
+.p-md { padding: var(--nifi-spacing-md); }
+.p-lg { padding: var(--nifi-spacing-lg); }
+
+.d-none { display: none; }
+.d-block { display: block; }
+.d-flex { display: flex; }
+.d-inline-flex { display: inline-flex; }
+
+.flex-column { flex-direction: column; }
+.justify-center { justify-content: center; }
+.align-center { align-items: center; }
+.flex-1 { flex: 1; }

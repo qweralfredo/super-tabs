@@ -1,0 +1,398 @@
+/* SuperTabs - Sidebar CSS */
+/* Main sidebar styling with NiFi theme integration */
+
+.supertabs-sidebar {
+  position: fixed;
+  top: 0;
+  right: -400px; /* Start hidden */
+  width: 400px;
+  height: 100vh;
+  background: var(--nifi-background);
+  border-left: 1px solid var(--nifi-border);
+  box-shadow: -4px 0 20px var(--nifi-shadow);
+  z-index: 10000;
+  transition: right 0.3s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--nifi-font-family);
+  overflow: hidden;
+}
+
+.supertabs-sidebar.visible {
+  right: 0;
+}
+
+.supertabs-sidebar.narrow {
+  width: 320px;
+}
+
+.supertabs-sidebar.wide {
+  width: 480px;
+}
+
+/* Sidebar Header */
+.supertabs-sidebar-header {
+  background: linear-gradient(135deg, var(--nifi-primary-blue), var(--nifi-secondary-blue));
+  color: white;
+  padding: var(--nifi-spacing-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--nifi-border);
+}
+
+.supertabs-sidebar-title {
+  font-size: var(--nifi-font-size-header);
+  font-weight: var(--nifi-font-weight-medium);
+  margin: 0;
+  flex: 1;
+}
+
+.supertabs-sidebar-subtitle {
+  font-size: var(--nifi-font-size-small);
+  opacity: 0.9;
+  margin: var(--nifi-spacing-xs) 0 0 0;
+}
+
+.supertabs-sidebar-controls {
+  display: flex;
+  gap: var(--nifi-spacing-xs);
+  align-items: center;
+}
+
+.supertabs-sidebar-control-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 16px;
+  padding: var(--nifi-spacing-xs);
+  border-radius: var(--nifi-border-radius);
+  cursor: pointer;
+  transition: var(--nifi-transition);
+  opacity: 0.8;
+}
+
+.supertabs-sidebar-control-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  opacity: 1;
+}
+
+/* Component Info Bar */
+.supertabs-component-info {
+  background: var(--nifi-gray-lighter);
+  padding: var(--nifi-spacing-md);
+  border-bottom: 1px solid var(--nifi-border);
+  flex-shrink: 0;
+}
+
+.supertabs-component-name {
+  font-size: var(--nifi-font-size-base);
+  font-weight: var(--nifi-font-weight-medium);
+  color: var(--nifi-gray-dark);
+  margin: 0 0 var(--nifi-spacing-xs) 0;
+  display: flex;
+  align-items: center;
+  gap: var(--nifi-spacing-sm);
+}
+
+.supertabs-component-type {
+  display: inline-block;
+  padding: 2px 6px;
+  background: var(--nifi-primary-blue);
+  color: white;
+  font-size: var(--nifi-font-size-small);
+  border-radius: 3px;
+  font-weight: var(--nifi-font-weight-normal);
+}
+
+.supertabs-component-id {
+  font-size: var(--nifi-font-size-small);
+  color: var(--nifi-gray-medium);
+  font-family: monospace;
+  margin: 0;
+}
+
+.supertabs-component-status {
+  display: flex;
+  align-items: center;
+  gap: var(--nifi-spacing-xs);
+  margin-top: var(--nifi-spacing-xs);
+}
+
+.supertabs-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.supertabs-status-dot.running {
+  background: var(--nifi-success-green);
+}
+
+.supertabs-status-dot.stopped {
+  background: var(--nifi-danger-red);
+}
+
+.supertabs-status-dot.invalid {
+  background: var(--nifi-warning-orange);
+}
+
+.supertabs-status-dot.disabled {
+  background: var(--nifi-gray-medium);
+}
+
+.supertabs-status-text {
+  font-size: var(--nifi-font-size-small);
+  color: var(--nifi-gray-medium);
+}
+
+/* Tabs Container */
+.supertabs-tabs-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.supertabs-tab-header {
+  background: var(--nifi-background);
+  border-bottom: 1px solid var(--nifi-border);
+  display: flex;
+  flex-shrink: 0;
+}
+
+.supertabs-tab-btn {
+  flex: 1;
+  padding: var(--nifi-spacing-md);
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-family: var(--nifi-font-family);
+  font-size: var(--nifi-font-size-base);
+  font-weight: var(--nifi-font-weight-medium);
+  color: var(--nifi-gray-medium);
+  cursor: pointer;
+  transition: var(--nifi-transition);
+  position: relative;
+}
+
+.supertabs-tab-btn:hover {
+  background: var(--nifi-gray-lighter);
+  color: var(--nifi-gray-dark);
+}
+
+.supertabs-tab-btn.active {
+  color: var(--nifi-primary-blue);
+  border-bottom-color: var(--nifi-primary-blue);
+  background: var(--nifi-background);
+}
+
+.supertabs-tab-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: var(--nifi-danger-red);
+  color: white;
+  font-size: 10px;
+  padding: 1px 4px;
+  border-radius: 8px;
+  min-width: 12px;
+  text-align: center;
+}
+
+/* Tab Content */
+.supertabs-tab-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--nifi-background);
+}
+
+.supertabs-tab-pane {
+  display: none;
+  padding: var(--nifi-spacing-md);
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.supertabs-tab-pane.active {
+  display: block;
+}
+
+/* Content sections */
+.supertabs-content-section {
+  margin-bottom: var(--nifi-spacing-lg);
+  padding-bottom: var(--nifi-spacing-lg);
+  border-bottom: 1px solid var(--nifi-gray-lighter);
+}
+
+.supertabs-content-section:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.supertabs-section-title {
+  font-size: var(--nifi-font-size-base);
+  font-weight: var(--nifi-font-weight-medium);
+  color: var(--nifi-gray-dark);
+  margin: 0 0 var(--nifi-spacing-sm) 0;
+  display: flex;
+  align-items: center;
+  gap: var(--nifi-spacing-sm);
+}
+
+.supertabs-section-icon {
+  font-size: 16px;
+  color: var(--nifi-primary-blue);
+}
+
+/* Loading states */
+.supertabs-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--nifi-spacing-xl);
+  color: var(--nifi-gray-medium);
+}
+
+.supertabs-loading .supertabs-spinner {
+  margin-right: var(--nifi-spacing-sm);
+}
+
+/* Error states */
+.supertabs-error {
+  padding: var(--nifi-spacing-md);
+  background: rgba(217, 83, 79, 0.1);
+  border: 1px solid var(--nifi-danger-red);
+  border-radius: var(--nifi-border-radius);
+  color: var(--nifi-danger-red);
+  margin-bottom: var(--nifi-spacing-md);
+}
+
+.supertabs-error-title {
+  font-weight: var(--nifi-font-weight-medium);
+  margin-bottom: var(--nifi-spacing-xs);
+}
+
+.supertabs-error-message {
+  font-size: var(--nifi-font-size-small);
+  margin: 0;
+}
+
+/* Empty states */
+.supertabs-empty {
+  text-align: center;
+  padding: var(--nifi-spacing-xl);
+  color: var(--nifi-gray-medium);
+}
+
+.supertabs-empty-icon {
+  font-size: 48px;
+  margin-bottom: var(--nifi-spacing-md);
+  opacity: 0.5;
+}
+
+.supertabs-empty-title {
+  font-size: var(--nifi-font-size-header);
+  font-weight: var(--nifi-font-weight-medium);
+  margin-bottom: var(--nifi-spacing-sm);
+}
+
+.supertabs-empty-message {
+  font-size: var(--nifi-font-size-base);
+  margin-bottom: var(--nifi-spacing-md);
+}
+
+/* Action buttons in content */
+.supertabs-action-bar {
+  display: flex;
+  gap: var(--nifi-spacing-sm);
+  margin-top: var(--nifi-spacing-md);
+  padding-top: var(--nifi-spacing-md);
+  border-top: 1px solid var(--nifi-gray-lighter);
+}
+
+/* Resize handle */
+.supertabs-resize-handle {
+  position: absolute;
+  left: -5px;
+  top: 0;
+  width: 10px;
+  height: 100%;
+  cursor: ew-resize;
+  background: transparent;
+}
+
+.supertabs-resize-handle:hover::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--nifi-primary-blue);
+  opacity: 0.5;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .supertabs-sidebar {
+    width: 350px;
+  }
+  
+  .supertabs-sidebar.wide {
+    width: 400px;
+  }
+}
+
+@media (max-width: 768px) {
+  .supertabs-sidebar {
+    width: 100vw;
+    right: -100vw;
+  }
+  
+  .supertabs-sidebar.visible {
+    right: 0;
+  }
+}
+
+/* Animations */
+@keyframes supertabs-fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.supertabs-fade-in {
+  animation: supertabs-fadeIn 0.3s ease-in-out;
+}
+
+/* Focus and accessibility */
+.supertabs-sidebar:focus-within {
+  outline: 2px solid var(--nifi-primary-blue);
+  outline-offset: -2px;
+}
+
+.supertabs-tab-btn:focus {
+  outline: 2px solid var(--nifi-primary-blue);
+  outline-offset: -2px;
+}
+
+/* Scrollbar styling */
+.supertabs-tab-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.supertabs-tab-content::-webkit-scrollbar-track {
+  background: var(--nifi-gray-lighter);
+}
+
+.supertabs-tab-content::-webkit-scrollbar-thumb {
+  background: var(--nifi-gray-light);
+  border-radius: 4px;
+}
+
+.supertabs-tab-content::-webkit-scrollbar-thumb:hover {
+  background: var(--nifi-gray-medium);
+}

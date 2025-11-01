@@ -1,0 +1,359 @@
+<!-- SuperTabs Icons Collection -->
+<!-- Alignment tool icons -->
+
+<!-- Horizontal alignment icon -->
+<svg id="icon-align-horizontal" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g fill="currentColor">
+    <!-- Horizontal line -->
+    <rect x="2" y="11" width="20" height="2" rx="1"/>
+    <!-- Top components -->
+    <rect x="4" y="4" width="4" height="6" rx="1"/>
+    <rect x="10" y="6" width="4" height="4" rx="1"/>
+    <rect x="16" y="3" width="4" height="7" rx="1"/>
+    <!-- Bottom components -->
+    <rect x="4" y="14" width="4" height="6" rx="1"/>
+    <rect x="10" y="14" width="4" height="4" rx="1"/>
+    <rect x="16" y="14" width="4" height="7" rx="1"/>
+  </g>
+</svg>
+
+<!-- Vertical alignment icon -->
+<svg id="icon-align-vertical" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g fill="currentColor">
+    <!-- Vertical line -->
+    <rect x="11" y="2" width="2" height="20" rx="1"/>
+    <!-- Left components -->
+    <rect x="4" y="4" width="6" height="4" rx="1"/>
+    <rect x="6" y="10" width="4" height="4" rx="1"/>
+    <rect x="3" y="16" width="7" height="4" rx="1"/>
+    <!-- Right components -->
+    <rect x="14" y="4" width="6" height="4" rx="1"/>
+    <rect x="14" y="10" width="4" height="4" rx="1"/>
+    <rect x="14" y="16" width="7" height="4" rx="1"/>
+  </g>
+</svg>
+
+<!-- Grid alignment icon -->
+<svg id="icon-align-grid" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g fill="currentColor">
+    <!-- Grid dots -->
+    <circle cx="6" cy="6" r="1"/>
+    <circle cx="12" cy="6" r="1"/>
+    <circle cx="18" cy="6" r="1"/>
+    <circle cx="6" cy="12" r="1"/>
+    <circle cx="12" cy="12" r="1"/>
+    <circle cx="18" cy="12" r="1"/>
+    <circle cx="6" cy="18" r="1"/>
+    <circle cx="12" cy="18" r="1"/>
+    <circle cx="18" cy="18" r="1"/>
+    <!-- Components -->
+    <rect x="4" y="4" width="4" height="4" rx="1" opacity="0.8"/>
+    <rect x="10" y="4" width="4" height="4" rx="1" opacity="0.8"/>
+    <rect x="16" y="4" width="4" height="4" rx="1" opacity="0.8"/>
+    <rect x="4" y="10" width="4" height="4" rx="1" opacity="0.8"/>
+    <rect x="10" y="10" width="4" height="4" rx="1" opacity="0.8"/>
+    <rect x="16" y="10" width="4" height="4" rx="1" opacity="0.8"/>
+  </g>
+</svg>
+
+<!-- Flow alignment icon -->
+<svg id="icon-align-flow" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g fill="currentColor">
+    <!-- Components -->
+    <rect x="2" y="8" width="4" height="8" rx="1"/>
+    <rect x="8" y="4" width="4" height="8" rx="1"/>
+    <rect x="14" y="10" width="4" height="8" rx="1"/>
+    <rect x="20" y="6" width="2" height="12" rx="1"/>
+    <!-- Arrows -->
+    <path d="M6.5 12h1.5v-1l1 1.5-1 1.5v-1H6.5z" opacity="0.6"/>
+    <path d="M12.5 8h1.5v-1l1 1.5-1 1.5v-1h-1.5z" opacity="0.6"/>
+    <path d="M18.5 14h1.5v-1l1 1.5-1 1.5v-1h-1.5z" opacity="0.6"/>
+  </g>
+</svg>
+
+<!-- Circular alignment icon -->
+<svg id="icon-align-circular" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g fill="currentColor">
+    <!-- Center circle -->
+    <circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="2,2" opacity="0.3"/>
+    <!-- Components around circle -->
+    <rect x="10" y="2" width="4" height="4" rx="1"/>
+    <rect x="18" y="6" width="4" height="4" rx="1"/>
+    <rect x="18" y="14" width="4" height="4" rx="1"/>
+    <rect x="10" y="18" width="4" height="4" rx="1"/>
+    <rect x="2" y="14" width="4" height="4" rx="1"/>
+    <rect x="2" y="6" width="4" height="4" rx="1"/>
+    <!-- Center point -->
+    <circle cx="12" cy="12" r="2" opacity="0.5"/>
+  </g>
+</svg>
+
+<!-- Hierarchical alignment icon -->
+<svg id="icon-align-hierarchical" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g fill="currentColor">
+    <!-- Top level -->
+    <rect x="10" y="2" width="4" height="4" rx="1"/>
+    <!-- Second level -->
+    <rect x="4" y="8" width="4" height="4" rx="1"/>
+    <rect x="16" y="8" width="4" height="4" rx="1"/>
+    <!-- Third level -->
+    <rect x="2" y="14" width="3" height="4" rx="1"/>
+    <rect x="6" y="14" width="3" height="4" rx="1"/>
+    <rect x="15" y="14" width="3" height="4" rx="1"/>
+    <rect x="19" y="14" width="3" height="4" rx="1"/>
+    <!-- Connecting lines -->
+    <path d="M12 6v2M6 12v2M18 12v2M12 8L6 10M12 8L18 10M6 12L4 14M6 12L8 14M18 12L16 14M18 12L20 14" 
+          stroke="currentColor" stroke-width="1" fill="none" opacity="0.4"/>
+  </g>
+</svg>
+
+<!-- Expression Language icons -->
+<svg id="icon-expression-language" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g fill="currentColor">
+    <!-- Code brackets -->
+    <path d="M8 6L6 12l2 6M16 6l2 6-2 6" stroke="currentColor" stroke-width="2" fill="none"/>
+    <!-- Function symbol -->
+    <text x="12" y="15" text-anchor="middle" font-family="monospace" font-size="8" font-weight="bold">fx</text>
+    <!-- Variables -->
+    <circle cx="10" cy="8" r="1"/>
+    <circle cx="14" cy="8" r="1"/>
+    <circle cx="12" cy="16" r="1"/>
+  </g>
+</svg>
+
+<!-- Generate icon -->
+<svg id="icon-generate" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g fill="currentColor">
+    <!-- Magic wand -->
+    <path d="M4 4l2 2m0 0l2-2m-2 2V2m0 4H2" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M18 18l2 2m0 0l2-2m-2 2v-4m0 4h-4" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <!-- Sparkles -->
+    <circle cx="8" cy="8" r="1"/>
+    <circle cx="16" cy="6" r="1"/>
+    <circle cx="6" cy="16" r="1"/>
+    <!-- Code lines -->
+    <rect x="10" y="10" width="8" height="1" rx="0.5"/>
+    <rect x="10" y="12" width="6" height="1" rx="0.5"/>
+    <rect x="10" y="14" width="7" height="1" rx="0.5"/>
+  </g>
+</svg>
+
+<!-- Validate icon -->
+<svg id="icon-validate" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g fill="currentColor">
+    <!-- Shield -->
+    <path d="M12 2l8 3v6c0 5.55-3.84 10.74-8 12-4.16-1.26-8-6.45-8-12V5l8-3z" 
+          fill="none" stroke="currentColor" stroke-width="1.5"/>
+    <!-- Checkmark -->
+    <path d="M8 12l2 2 4-4" stroke="currentColor" stroke-width="2" fill="none"/>
+  </g>
+</svg>
+
+<!-- History icon -->
+<svg id="icon-history" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g fill="currentColor">
+    <!-- Clock -->
+    <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    <!-- Clock hands -->
+    <path d="M12 7v5h4" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <!-- History arrow -->
+    <path d="M4 12h3l-1.5-1.5M4 12l1.5 1.5" stroke="currentColor" stroke-width="1.5" fill="none"/>
+  </g>
+</svg>
+
+<!-- Copy icon -->
+<svg id="icon-copy" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g fill="currentColor">
+    <!-- Original document -->
+    <rect x="6" y="6" width="12" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    <!-- Copy document -->
+    <rect x="2" y="2" width="12" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    <!-- Copy indicator -->
+    <path d="M14 6v14h4V8l-2-2h-2z" fill="currentColor" opacity="0.3"/>
+  </g>
+</svg>
+
+<!-- Preview icon -->
+<svg id="icon-preview" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g fill="currentColor">
+    <!-- Eye -->
+    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5z" 
+          fill="none" stroke="currentColor" stroke-width="1.5"/>
+    <!-- Pupil -->
+    <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+  </g>
+</svg>
+
+<!-- Apply icon -->
+<svg id="icon-apply" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g fill="currentColor">
+    <!-- Play button -->
+    <path d="M8 5v14l11-7z" fill="currentColor"/>
+    <!-- Border -->
+    <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"/>
+  </g>
+</svg>
+
+<!-- Success icon -->
+<svg id="icon-success" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g fill="currentColor">
+    <!-- Circle -->
+    <circle cx="12" cy="12" r="10" fill="currentColor"/>
+    <!-- Checkmark -->
+    <path d="M8 12l2 2 4-4" stroke="white" stroke-width="2" fill="none"/>
+  </g>
+</svg>
+
+<!-- Warning icon -->
+<svg id="icon-warning" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g fill="currentColor">
+    <!-- Triangle -->
+    <path d="M12 2l10 18H2L12 2z" fill="currentColor"/>
+    <!-- Exclamation -->
+    <path d="M12 8v4m0 4h.01" stroke="white" stroke-width="2" fill="none"/>
+  </g>
+</svg>
+
+<!-- Error icon -->
+<svg id="icon-error" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g fill="currentColor">
+    <!-- Circle -->
+    <circle cx="12" cy="12" r="10" fill="currentColor"/>
+    <!-- X mark -->
+    <path d="M8 8l8 8m0-8l-8 8" stroke="white" stroke-width="2" fill="none"/>
+  </g>
+</svg>
+
+<!-- Loading icon -->
+<svg id="icon-loading" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g fill="currentColor">
+    <!-- Spinner -->
+    <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2" opacity="0.3"/>
+    <path d="M12 3a9 9 0 019 9" fill="none" stroke="currentColor" stroke-width="2">
+      <animateTransform 
+        attributeName="transform" 
+        type="rotate" 
+        values="0 12 12;360 12 12" 
+        dur="1s" 
+        repeatCount="indefinite"/>
+    </path>
+  </g>
+</svg>
+
+<!-- Refresh icon -->
+<svg id="icon-refresh" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g fill="currentColor">
+    <!-- Arrow circle -->
+    <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" 
+          stroke="currentColor" stroke-width="2" fill="none"/>
+  </g>
+</svg>
+
+<!-- Reset icon -->
+<svg id="icon-reset" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g fill="currentColor">
+    <!-- Reset arrow -->
+    <path d="M3 12a9 9 0 019-9 9.75 9.75 0 016.74 2.74L21 8" stroke="currentColor" stroke-width="2" fill="none"/>
+    <path d="M21 3v5h-5" stroke="currentColor" stroke-width="2" fill="none"/>
+    <path d="M21 12a9 9 0 01-9 9 9.75 9.75 0 01-6.74-2.74L3 16" stroke="currentColor" stroke-width="2" fill="none"/>
+    <path d="M3 21v-5h5" stroke="currentColor" stroke-width="2" fill="none"/>
+  </g>
+</svg>
+
+<!-- Minimize icon -->
+<svg id="icon-minimize" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g fill="currentColor">
+    <!-- Minimize line -->
+    <path d="M6 12h12" stroke="currentColor" stroke-width="2" fill="none"/>
+  </g>
+</svg>
+
+<!-- Maximize icon -->
+<svg id="icon-maximize" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g fill="currentColor">
+    <!-- Square -->
+    <rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+  </g>
+</svg>
+
+<!-- Resize icon -->
+<svg id="icon-resize" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g fill="currentColor">
+    <!-- Resize handle -->
+    <path d="M21 15l-6 6h6v-6zM21 9l-12 12h6l6-6v-6zM21 3l-18 18h6l12-12v-6z" fill="currentColor"/>
+  </g>
+</svg>
+
+<!-- Spacing icon -->
+<svg id="icon-spacing" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g fill="currentColor">
+    <!-- Objects -->
+    <rect x="2" y="8" width="4" height="8" rx="1"/>
+    <rect x="18" y="8" width="4" height="8" rx="1"/>
+    <!-- Spacing arrows -->
+    <path d="M8 12h8m-6-2l-2 2 2 2m4-4l2 2-2 2" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <!-- Distance markers -->
+    <line x1="8" y1="6" x2="16" y2="6" stroke="currentColor" stroke-width="1" opacity="0.5"/>
+    <line x1="8" y1="6" x2="8" y2="7" stroke="currentColor" stroke-width="1" opacity="0.5"/>
+    <line x1="16" y1="6" x2="16" y2="7" stroke="currentColor" stroke-width="1" opacity="0.5"/>
+  </g>
+</svg>
+
+<!-- Component icons for different NiFi processor types -->
+<svg id="icon-processor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g fill="currentColor">
+    <!-- Processor box -->
+    <rect x="4" y="6" width="16" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+    <!-- Gear inside -->
+    <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24" 
+          stroke="currentColor" stroke-width="1" opacity="0.5"/>
+  </g>
+</svg>
+
+<svg id="icon-input-port" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g fill="currentColor">
+    <!-- Input port -->
+    <circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/>
+    <!-- Arrow pointing in -->
+    <path d="M7 12h10m-4-4l4 4-4 4" stroke="currentColor" stroke-width="2" fill="none"/>
+  </g>
+</svg>
+
+<svg id="icon-output-port" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g fill="currentColor">
+    <!-- Output port -->
+    <circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/>
+    <!-- Arrow pointing out -->
+    <path d="M17 12H7m4-4l-4 4 4 4" stroke="currentColor" stroke-width="2" fill="none"/>
+  </g>
+</svg>
+
+<svg id="icon-funnel" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g fill="currentColor">
+    <!-- Funnel shape -->
+    <path d="M6 4h12l-4 8v8l-4-2v-6l-4-8z" fill="currentColor"/>
+  </g>
+</svg>
+
+<svg id="icon-label" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g fill="currentColor">
+    <!-- Label tag -->
+    <path d="M2 12l7-7h10a2 2 0 012 2v10a2 2 0 01-2 2H9l-7-7z" fill="none" stroke="currentColor" stroke-width="2"/>
+    <!-- Hole in tag -->
+    <circle cx="16" cy="10" r="1.5" fill="currentColor"/>
+  </g>
+</svg>
+
+<svg id="icon-process-group" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g fill="currentColor">
+    <!-- Folder -->
+    <path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" 
+          fill="none" stroke="currentColor" stroke-width="2"/>
+    <!-- Process components inside -->
+    <rect x="7" y="11" width="3" height="2" rx="1" fill="currentColor" opacity="0.5"/>
+    <rect x="11" y="11" width="3" height="2" rx="1" fill="currentColor" opacity="0.5"/>
+    <rect x="15" y="11" width="2" height="2" rx="1" fill="currentColor" opacity="0.5"/>
+  </g>
+</svg>
