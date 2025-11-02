@@ -181,11 +181,11 @@ class SuperTabsContentScript {
       window.SuperTabsLogger?.warn('NiFi API Client not available');
     }
 
-    // Initialize PHI-3 agent
-    if (window.phi3Agent && window.phi3Agent.initialize) {
-      await window.phi3Agent.initialize();
+    // Initialize PHI-4 agent
+    if (window.phi4Agent && window.phi4Agent.initialize) {
+      await window.phi4Agent.initialize();
     } else {
-      window.SuperTabsLogger?.warn('PHI-3 Agent not available');
+      window.SuperTabsLogger?.warn('PHI-4 Agent not available');
     }
   }
 

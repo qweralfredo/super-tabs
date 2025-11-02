@@ -32,7 +32,7 @@ class SuperTabsOptions {
     document.getElementById('nifi-password').value = this.settings.nifiPassword || '';
 
     // AI Configuration
-    document.getElementById('phi3-api-key').value = this.settings.phi3ApiKey || '';
+    document.getElementById('phi4-api-key').value = this.settings.phi4ApiKey || '';
     document.getElementById('claude-api-key').value = this.settings.claudeApiKey || '';
     this.setToggleState('prefer-claude-toggle', this.settings.preferClaude);
 
@@ -145,7 +145,7 @@ class SuperTabsOptions {
     this.settings.nifiBaseUrl = document.getElementById('nifi-url').value.trim();
     this.settings.nifiUsername = document.getElementById('nifi-username').value.trim();
     this.settings.nifiPassword = document.getElementById('nifi-password').value;
-    this.settings.phi3ApiKey = document.getElementById('phi3-api-key').value.trim();
+    this.settings.phi4ApiKey = document.getElementById('phi4-api-key').value.trim();
     this.settings.claudeApiKey = document.getElementById('claude-api-key').value.trim();
   }
 
@@ -158,7 +158,7 @@ class SuperTabsOptions {
     }
 
     // Validate required fields if AI is configured
-    if (this.settings.phi3ApiKey || this.settings.claudeApiKey) {
+    if (this.settings.phi4ApiKey || this.settings.claudeApiKey) {
       if (this.settings.preferClaude && !this.settings.claudeApiKey) {
         errors.push('Chave API do Claude é obrigatória quando Claude é preferido');
       }
@@ -267,14 +267,14 @@ class SuperTabsOptions {
 
       this.collectFormValues();
 
-      const hasAnyKey = this.settings.phi3ApiKey || this.settings.claudeApiKey;
+      const hasAnyKey = this.settings.phi4ApiKey || this.settings.claudeApiKey;
       if (!hasAnyKey) {
         throw new Error('Nenhuma chave API configurada');
       }
 
       // Mock test since we don't have real API endpoints yet
-      const preferredModel = (this.settings.preferClaude && this.settings.claudeApiKey) ? 'Claude' : 'PHI-3';
-      const hasRequiredKey = preferredModel === 'Claude' ? this.settings.claudeApiKey : this.settings.phi3ApiKey;
+      const preferredModel = (this.settings.preferClaude && this.settings.claudeApiKey) ? 'Claude' : 'PHI-4';
+      const hasRequiredKey = preferredModel === 'Claude' ? this.settings.claudeApiKey : this.settings.phi4ApiKey;
 
       if (!hasRequiredKey) {
         throw new Error(`Chave API do ${preferredModel} não configurada`);

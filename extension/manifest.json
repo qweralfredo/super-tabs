@@ -32,7 +32,7 @@
         "src/utils/logger.js",
         "src/utils/storage.js",
         "src/content/nifi-api-client.js",
-        "src/content/phi3-agent.js",
+        "src/content/phi4-agent.js",
         "src/content/icons-manager.js",
         "src/content/canvas-detector.js",
         "src/content/tabs/info-tab.js",

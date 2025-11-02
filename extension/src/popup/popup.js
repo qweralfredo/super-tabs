@@ -52,7 +52,7 @@ class SuperTabsPopup {
         alignmentEnabled: true,
         expressionLanguageEnabled: true,
         debugMode: false,
-        phi3ApiKey: '',
+        phi4ApiKey: '',
         claudeApiKey: '',
         preferClaude: false
       };
@@ -125,12 +125,12 @@ class SuperTabsPopup {
     const dot = statusElement.querySelector('.status-dot');
     const text = statusElement.querySelector('span');
 
-    const hasAIKey = this.settings.phi3ApiKey || this.settings.claudeApiKey;
+    const hasAIKey = this.settings.phi4ApiKey || this.settings.claudeApiKey;
 
     if (hasAIKey) {
       statusElement.className = 'status-indicator connected';
       dot.className = 'status-dot connected';
-      text.textContent = `IA configurada (${this.settings.preferClaude && this.settings.claudeApiKey ? 'Claude' : 'PHI-3'})`;
+      text.textContent = `IA configurada (${this.settings.preferClaude && this.settings.claudeApiKey ? 'Claude' : 'PHI-4'})`;
     } else {
       statusElement.className = 'status-indicator inactive';
       dot.className = 'status-dot inactive';

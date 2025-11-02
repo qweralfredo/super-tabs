@@ -307,9 +307,9 @@ class SuperTabsInfoTab {
     const insightsContent = this.container.querySelector('#insights-content');
     
     try {
-      // Use PHI-3 agent to generate FlowFile insights
-      if (window.phi3Agent) {
-        const insights = await window.phi3Agent.generateResponse(
+      // Use PHI-4 agent to generate FlowFile insights
+      if (window.phi4Agent) {
+        const insights = await window.phi4Agent.generateResponse(
           `Analyze this NiFi FlowFile and provide insights about its properties, processing status, and potential issues: ${JSON.stringify(flowFile, null, 2)}`,
           { flowFile }
         );
@@ -462,9 +462,9 @@ class SuperTabsInfoTab {
     const insightsContent = this.container.querySelector('#insights-content');
     
     try {
-      // Use PHI-3 agent to generate insights
-      if (window.phi3Agent) {
-        const insights = await window.phi3Agent.generateResponse(
+      // Use PHI-4 agent to generate insights
+      if (window.phi4Agent) {
+        const insights = await window.phi4Agent.generateResponse(
           `Provide insights and analysis for this NiFi component: ${JSON.stringify(component, null, 2)}`,
           { component }
         );
@@ -635,7 +635,7 @@ class SuperTabsInfoTab {
       if (!this.currentComponent) return;
       
       // Trigger component analysis
-      const analysis = await window.phi3Agent?.analyzeComponent(this.currentComponent);
+      const analysis = await window.phi4Agent?.analyzeComponent(this.currentComponent);
       
       if (analysis) {
         // Update insights with analysis

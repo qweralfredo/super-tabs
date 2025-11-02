@@ -284,9 +284,9 @@ class SuperTabsChatTab {
         enhancedPrompt = `As a helpful NiFi assistant, please answer: ${message}. Be concise but informative, focusing on practical guidance.`;
       }
 
-      // Use PHI-3 agent if available
-      if (window.phi3Agent) {
-        const response = await window.phi3Agent.generateResponse(enhancedPrompt, context);
+      // Use PHI-4 agent if available
+      if (window.phi4Agent) {
+        const response = await window.phi4Agent.generateResponse(enhancedPrompt, context);
         
         // Store in conversation history
         this.conversationHistory.push({

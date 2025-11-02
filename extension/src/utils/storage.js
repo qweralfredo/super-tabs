@@ -14,10 +14,10 @@ if (typeof window.SuperTabsStorageClass === 'undefined') {
         enableNotifications: true,
         theme: 'auto',
         autoSaveEnabled: true,
-        phi3Config: {
+        phi4Config: {
           endpoint: '',
           apiKey: '',
-          model: 'phi3',
+          model: 'phi4',
           temperature: 0.7
         },
         nifiConfig: {

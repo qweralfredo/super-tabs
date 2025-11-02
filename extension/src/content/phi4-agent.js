@@ -19,12 +19,12 @@ class PHI4Agent {
    */
   async initialize() {
     try {
-      const result = await chrome.storage.sync.get(['phi3ApiKey', 'claudeApiKey']);
-      this.apiKey = result.phi3ApiKey;
-      this.claudeKey = result.claudeApiKey;
-      console.log('[PHI-3 Agent] Initialized');
+      const result = await chrome.storage.sync.get(['phi4ApiKey', 'claudeApiKey']);
+      this.apiKey = result.phi4ApiKey;
+      this.claudeApiKey = result.claudeApiKey;
+      console.log('[PHI-4 Agent] Initialized');
     } catch (error) {
-      console.error('[PHI-3 Agent] Initialization error:', error);
+      console.error('[PHI-4 Agent] Initialization error:', error);
     }
   }
 
@@ -33,9 +33,9 @@ class PHI4Agent {
    */
   async generateResponse(prompt, context = {}) {
     try {
-      // Try PHI-3 first
+      // Try PHI-4 first
       if (this.apiKey) {
-        return await this.callPHI3(prompt, context);
+        return await this.callPHI4(prompt, context);
       }
       
       // Fallback to Claude if available
@@ -47,15 +47,15 @@ class PHI4Agent {
       return this.getMockResponse(prompt, context);
       
     } catch (error) {
-      console.error('[PHI-3 Agent] Generation error:', error);
+      console.error('[PHI-4 Agent] Generation error:', error);
       return this.getMockResponse(prompt, context);
     }
   }
 
   /**
-   * Call PHI-3 API
+   * Call PHI-4 API
    */
-  async callPHI3(prompt, context) {
+  async callPHI4(prompt, context) {
     const messages = [
       {
         role: 'system',
@@ -75,7 +75,7 @@ class PHI4Agent {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'phi-3',
+        model: 'phi-4',
         messages: messages,
         max_tokens: 1000,
         temperature: 0.7
@@ -89,7 +89,7 @@ class PHI4Agent {
       this.addToHistory('assistant', aiResponse);
       return aiResponse;
     } else {
-      throw new Error(`PHI-3 API error: ${response.status}`);
+      throw new Error(`PHI-4 API error: ${response.status}`);
     }
   }
 
@@ -277,5 +277,5 @@ What specific aspect would you like to explore?`;
 }
 
 // Global instance
-window.phi3Agent = new PHI3Agent();
-window.phi3Agent.initialize();
+window.phi4Agent = new PHI4Agent();
+window.phi4Agent.initialize();
