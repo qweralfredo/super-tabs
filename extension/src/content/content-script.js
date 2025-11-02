@@ -20,7 +20,8 @@ const SuperTabsStorage = {
         sidebarVisible: true,
         autoShowSidebar: true,
         enableNotifications: true,
-        debugMode: false
+        debugMode: false,
+        sidebarWidth: 400
       });
       return result;
     } catch (error) {
@@ -29,7 +30,8 @@ const SuperTabsStorage = {
         sidebarVisible: true,
         autoShowSidebar: true,
         enableNotifications: true,
-        debugMode: false
+        debugMode: false,
+        sidebarWidth: 400
       };
     }
   },
@@ -40,6 +42,27 @@ const SuperTabsStorage = {
       SuperTabsLogger.debug('Settings saved', settings);
     } catch (error) {
       SuperTabsLogger.error('Failed to save settings', error);
+    }
+  },
+
+  getChatHistory: async (componentId) => {
+    try {
+      const key = `chat_history_${componentId}`;
+      const result = await chrome.storage.local.get(key);
+      return result[key] || [];
+    } catch (error) {
+      SuperTabsLogger.error('Failed to get chat history', error);
+      return [];
+    }
+  },
+
+  saveChatHistory: async (componentId, history) => {
+    try {
+      const key = `chat_history_${componentId}`;
+      await chrome.storage.local.set({ [key]: history });
+      SuperTabsLogger.debug('Chat history saved', { componentId, messages: history.length });
+    } catch (error) {
+      SuperTabsLogger.error('Failed to save chat history', error);
     }
   }
 };
@@ -262,12 +285,14 @@ class SuperTabsContentScript {
   }
 
   async handleComponentClick(componentInfo, event) {
+    SuperTabsLogger.debug('Handling component click', componentInfo);
+    
     if (this.settings.autoShowSidebar && this.sidebar) {
-      await this.sidebar.show(componentInfo);
+      await this.sidebar.showForComponent(componentInfo);
     }
 
     // Highlight clicked component
-    if (canvasDetector) {
+    if (canvasDetector && canvasDetector.highlightComponent) {
       canvasDetector.highlightComponent(componentInfo.id);
     }
   }
@@ -276,12 +301,12 @@ class SuperTabsContentScript {
     SuperTabsLogger.debug('Handling FlowFile click', flowFileInfo);
     
     if (this.settings.autoShowSidebar && this.sidebar) {
-      await this.sidebar.show(flowFileInfo);
+      await this.sidebar.showForComponent(flowFileInfo);
     }
 
     // Highlight clicked FlowFile
-    if (canvasDetector) {
-      canvasDetector.highlightFlowFile(flowFileInfo.uuid);
+    if (canvasDetector && canvasDetector.highlightFlowFile) {
+      canvasDetector.highlightFlowFile(flowFileInfo.uuid || flowFileInfo.id);
     }
   }
 

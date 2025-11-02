@@ -150,17 +150,92 @@ class PHI3Agent {
    * Generate mock response for testing
    */
   getMockResponse(prompt, context) {
-    const responses = {
-      component: `Based on the selected component, I can see this is a ${context.component?.type || 'processor'} with specific configuration. Here are some insights:\n\n• Purpose: Data processing and transformation\n• Status: Currently ${context.component?.state || 'stopped'}\n• Recommendations: Consider optimizing batch size and concurrent tasks for better performance.`,
-      
-      expressionLanguage: `Here's a NiFi Expression Language example:\n\n\`\${filename:substringBefore('.')}\`\n\nThis expression extracts the filename without extension. You can use it to:\n• Transform filenames\n• Route based on file types\n• Generate new attributes`,
-      
-      general: `I'm here to help you with Apache NiFi! I can assist with:\n\n• Component analysis and optimization\n• Expression Language generation\n• Flow design recommendations\n• Troubleshooting issues\n\nWhat would you like to know about your NiFi setup?`
-    };
+    const lowerPrompt = prompt.toLowerCase();
+    const comp = context.component?.component || context.component || {};
+    const componentType = comp.type || 'Processor';
+    const componentName = comp.name || 'component';
+    const componentState = comp.state || 'UNKNOWN';
 
-    if (context.component) return responses.component;
-    if (context.expressionLanguage) return responses.expressionLanguage;
-    return responses.general;
+    // Explain component responses
+    if (lowerPrompt.includes('explain') || lowerPrompt.includes('💡')) {
+      return `Based on the selected component, I can see this is a **${componentType}** with specific configuration. Here are some insights:
+
+• **Purpose**: Data processing and transformation
+• **Status**: Currently ${componentState}
+• **Recommendations**: Consider optimizing batch size and concurrent tasks for better performance.`;
+    }
+    
+    // Troubleshooting responses
+    if (lowerPrompt.includes('troubleshoot') || lowerPrompt.includes('🔧') || lowerPrompt.includes('problem') || lowerPrompt.includes('error')) {
+      return `Here are common troubleshooting steps for this **${componentType}**:
+
+• **Check Configuration**: Verify all required properties are set correctly
+• **Review Logs**: Look for specific error messages in NiFi logs  
+• **Validate Connections**: Ensure input/output connections are properly configured
+• **Test Data**: Try with smaller data sets to isolate issues
+• **Performance**: Monitor memory and CPU usage during processing`;
+    }
+    
+    // Optimization responses
+    if (lowerPrompt.includes('optimiz') || lowerPrompt.includes('⚡') || lowerPrompt.includes('performance') || lowerPrompt.includes('improve')) {
+      return `Performance optimization suggestions for **${componentName}**:
+
+• **Batch Size**: Increase batch size for better throughput
+• **Concurrent Tasks**: Adjust based on available resources
+• **Memory Settings**: Configure appropriate heap sizes
+• **Connection Queues**: Set appropriate queue sizes and back pressure
+• **Scheduling**: Optimize run schedule based on data patterns`;
+    }
+    
+    // Usage examples responses
+    if (lowerPrompt.includes('example') || lowerPrompt.includes('📝') || lowerPrompt.includes('usage') || lowerPrompt.includes('how to')) {
+      return `Here are some usage examples for this **${componentType}**:
+
+• **Basic Configuration**: Set required properties for standard operation
+• **Advanced Settings**: Configure optional properties for specific use cases
+• **Expression Language**: Use dynamic property values with NiFi EL
+• **Error Handling**: Configure failure relationships and retry logic
+• **Monitoring**: Set up bulletins and notifications for errors`;
+    }
+
+    // Expression Language responses
+    if (lowerPrompt.includes('expression') || lowerPrompt.includes('el') || lowerPrompt.includes('language')) {
+      return `Here's a NiFi Expression Language example for **${componentType}**:
+
+\`\${filename:substringBefore('.')}\`
+
+This expression extracts the filename without extension. You can use it to:
+• Transform filenames
+• Route based on file types  
+• Generate new attributes
+• Create dynamic property values
+
+Would you like help with a specific expression?`;
+    }
+
+    // Configuration responses
+    if (lowerPrompt.includes('config') || lowerPrompt.includes('setting') || lowerPrompt.includes('property')) {
+      return `Configuration guidance for **${componentName}**:
+
+• **Required Properties**: Essential settings that must be configured
+• **Optional Properties**: Additional customization options
+• **Relationships**: Input/output connection requirements
+• **Scheduling**: Run frequency and concurrent task settings
+• **Validation**: Common configuration errors to avoid
+
+What specific configuration aspect would you like help with?`;
+    }
+    
+    // Default general response
+    return `I'm here to help you with the **${componentName}** ${componentType}! I can assist with:
+
+• **Configuration** questions and property explanations
+• **Troubleshooting** issues and error diagnosis  
+• **Performance** optimization and tuning advice
+• **Usage examples** and best practices
+• **Expression Language** generation and validation
+
+What specific aspect would you like to explore?`;
   }
 
   /**

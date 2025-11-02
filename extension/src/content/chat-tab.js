@@ -20,7 +20,7 @@ class SuperTabsChatTab {
       SuperTabsLogger.debug('ChatTab', 'Initializing chat tab');
       
       // Get Phi3 agent instance
-      this.phi3Agent = window.superTabsPhi3Agent;
+      this.phi3Agent = window.phi3Agent;
       
       // Show initial state
       this.showWelcomeState();
@@ -92,8 +92,28 @@ class SuperTabsChatTab {
   }
 
   renderChatInterface() {
+    const componentName = this.component?.component?.name || this.component?.name || 'Component';
     const html = `
       <div class="supertabs-chat-content">
+        <div class="supertabs-chat-mode-selector">
+          <div class="supertabs-mode-buttons">
+            <button class="supertabs-mode-btn active" data-mode="assistant">🤖 AI Assistant</button>
+            <button class="supertabs-mode-btn" data-mode="instructor">👨‍🏫 Instructor</button>
+          </div>
+          <div class="supertabs-mode-status">🟢 AI Assistant Mode</div>
+        </div>
+        
+        <div class="supertabs-chat-context">
+          <div class="supertabs-context-header">🎯 Active Context</div>
+          <div class="supertabs-context-info">
+            <div class="supertabs-context-component">
+              <strong>${componentName}</strong>
+              <span>${this.component?.component?.type || 'Processor'}</span>
+            </div>
+            <div class="supertabs-context-status">⚫ ${this.component?.component?.state || 'UNKNOWN'}</div>
+          </div>
+        </div>
+        
         <div class="supertabs-chat-messages" id="supertabs-chat-messages">
           ${this.renderMessages()}
           ${this.isTyping ? this.renderTypingIndicator() : ''}
@@ -104,7 +124,7 @@ class SuperTabsChatTab {
             <textarea 
               class="supertabs-chat-input" 
               id="supertabs-chat-input"
-              placeholder="Ask about this component..."
+              placeholder="Ask me about ${componentName}..."
               rows="1"
             ></textarea>
             <button 
@@ -112,19 +132,14 @@ class SuperTabsChatTab {
               id="supertabs-chat-send"
               ${this.isTyping ? 'disabled' : ''}
             >
-              Send
+              Send 📤
             </button>
           </div>
-          <div class="supertabs-chat-actions">
-            <button class="supertabs-btn supertabs-btn-secondary supertabs-btn-small" id="supertabs-clear-chat">
-              🗑️ Clear
-            </button>
-            <button class="supertabs-btn supertabs-btn-secondary supertabs-btn-small" id="supertabs-export-chat">
-              💾 Export
-            </button>
-            <button class="supertabs-btn supertabs-btn-secondary supertabs-btn-small" id="supertabs-suggest-questions">
-              💡 Suggestions
-            </button>
+          <div class="supertabs-chat-quick-actions">
+            <button class="supertabs-quick-btn" id="supertabs-explain-btn">� Explain this component</button>
+            <button class="supertabs-quick-btn" id="supertabs-troubleshoot-btn">� Troubleshoot issues</button>
+            <button class="supertabs-quick-btn" id="supertabs-optimize-btn">⚡ Optimization tips</button>
+            <button class="supertabs-quick-btn" id="supertabs-examples-btn">� Usage examples</button>
           </div>
         </div>
       </div>
@@ -178,9 +193,12 @@ class SuperTabsChatTab {
   bindChatEvents() {
     const input = this.container.querySelector('#supertabs-chat-input');
     const sendBtn = this.container.querySelector('#supertabs-chat-send');
-    const clearBtn = this.container.querySelector('#supertabs-clear-chat');
-    const exportBtn = this.container.querySelector('#supertabs-export-chat');
-    const suggestBtn = this.container.querySelector('#supertabs-suggest-questions');
+    
+    // Quick action buttons
+    const explainBtn = this.container.querySelector('#supertabs-explain-btn');
+    const troubleshootBtn = this.container.querySelector('#supertabs-troubleshoot-btn');
+    const optimizeBtn = this.container.querySelector('#supertabs-optimize-btn');
+    const examplesBtn = this.container.querySelector('#supertabs-examples-btn');
 
     // Send message on button click
     sendBtn?.addEventListener('click', () => this.sendMessage());
@@ -199,10 +217,56 @@ class SuperTabsChatTab {
       e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
     });
 
-    // Action buttons
-    clearBtn?.addEventListener('click', () => this.clearChat());
-    exportBtn?.addEventListener('click', () => this.exportChat());
-    suggestBtn?.addEventListener('click', () => this.showSuggestions());
+    // Quick action buttons
+    explainBtn?.addEventListener('click', () => {
+      this.sendQuickMessage('💡 Explain this component');
+    });
+
+    troubleshootBtn?.addEventListener('click', () => {
+      this.sendQuickMessage('🔧 Troubleshoot issues');
+    });
+
+    optimizeBtn?.addEventListener('click', () => {
+      this.sendQuickMessage('⚡ Optimization tips');
+    });
+
+    examplesBtn?.addEventListener('click', () => {
+      this.sendQuickMessage('📝 Usage examples');
+    });
+
+    // Mode selector
+    const modeButtons = this.container.querySelectorAll('.supertabs-mode-btn');
+    modeButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const mode = btn.dataset.mode;
+        this.switchMode(mode);
+      });
+    });
+  }
+
+  async sendQuickMessage(message) {
+    const input = this.container.querySelector('#supertabs-chat-input');
+    if (input) {
+      input.value = message;
+      await this.sendMessage();
+    }
+  }
+
+  switchMode(mode) {
+    // Update button states
+    const modeButtons = this.container.querySelectorAll('.supertabs-mode-btn');
+    modeButtons.forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.mode === mode);
+    });
+
+    // Update status
+    const statusElement = this.container.querySelector('.supertabs-mode-status');
+    if (statusElement) {
+      const modeText = mode === 'assistant' ? '🟢 AI Assistant Mode' : '🔵 Instructor Mode';
+      statusElement.textContent = modeText;
+    }
+
+    SuperTabsLogger.debug('ChatTab', `Switched to ${mode} mode`);
   }
 
   async sendMessage() {
@@ -245,28 +309,78 @@ class SuperTabsChatTab {
   async getAIResponse(userMessage) {
     try {
       if (!this.phi3Agent) {
-        throw new Error('AI agent not available');
+        SuperTabsLogger.warn('ChatTab', 'AI agent not available, using mock response');
+        return this.getMockAIResponse(userMessage);
       }
 
       // Prepare context about the component
       const context = await this.prepareComponentContext();
       
       // Get response from AI agent
-      const response = await this.phi3Agent.chatWithComponent(
-        this.component,
-        userMessage,
-        {
-          context: context,
-          conversationHistory: this.conversation.slice(-10) // Last 10 messages for context
-        }
-      );
+      const response = await this.phi3Agent.generateResponse(userMessage, {
+        component: this.component,
+        context: context,
+        conversationHistory: this.conversation.slice(-10) // Last 10 messages for context
+      });
 
       return response;
       
     } catch (error) {
       SuperTabsLogger.error('ChatTab', 'Failed to get AI response', error);
-      throw error;
+      return this.getMockAIResponse(userMessage);
     }
+  }
+
+  getMockAIResponse(userMessage) {
+    const lowerMessage = userMessage.toLowerCase();
+    
+    if (lowerMessage.includes('explain') || lowerMessage.includes('what')) {
+      return `Based on the selected component, I can see this is a ${this.component?.component?.type || 'Processor'} with specific configuration. Here are some insights:
+
+• **Purpose**: Data processing and transformation
+• **Status**: Currently ${this.component?.component?.state || 'UNKNOWN'}
+• **Recommendations**: Consider optimizing batch size and concurrent tasks for better performance.`;
+    }
+    
+    if (lowerMessage.includes('troubleshoot') || lowerMessage.includes('problem') || lowerMessage.includes('error')) {
+      return `Here are common troubleshooting steps for this component:
+
+• **Check Configuration**: Verify all required properties are set correctly
+• **Review Logs**: Look for specific error messages in NiFi logs
+• **Validate Connections**: Ensure input/output connections are properly configured
+• **Test Data**: Try with smaller data sets to isolate issues
+• **Performance**: Monitor memory and CPU usage during processing`;
+    }
+    
+    if (lowerMessage.includes('optimize') || lowerMessage.includes('performance') || lowerMessage.includes('improve')) {
+      return `Performance optimization suggestions:
+
+• **Batch Size**: Increase batch size for better throughput
+• **Concurrent Tasks**: Adjust based on available resources
+• **Memory Settings**: Configure appropriate heap sizes
+• **Connection Queues**: Set appropriate queue sizes and back pressure
+• **Scheduling**: Optimize run schedule based on data patterns`;
+    }
+    
+    if (lowerMessage.includes('example') || lowerMessage.includes('usage')) {
+      return `Here are some usage examples for this component:
+
+• **Basic Configuration**: Set required properties for standard operation
+• **Advanced Settings**: Configure optional properties for specific use cases
+• **Expression Language**: Use dynamic property values with NiFi EL
+• **Error Handling**: Configure failure relationships and retry logic
+• **Monitoring**: Set up bulletins and notifications for errors`;
+    }
+    
+    return `I'm here to help you with this ${this.component?.component?.type || 'component'}! I can assist with:
+
+• **Configuration** questions and property explanations
+• **Troubleshooting** issues and error diagnosis
+• **Performance** optimization and tuning advice
+• **Usage examples** and best practices
+• **Expression Language** generation and validation
+
+What specific aspect would you like to explore?`;
   }
 
   async prepareComponentContext() {
@@ -314,19 +428,15 @@ class SuperTabsChatTab {
   async sendWelcomeMessage() {
     try {
       const comp = this.component.component || this.component;
-      const welcomeMsg = `Hello! I'm your AI assistant for the ${comp.type} "${comp.name || 'component'}". 
-
-I can help you with:
-• **Configuration** - Explain properties and settings
-• **Troubleshooting** - Analyze issues and suggest solutions  
-• **Optimization** - Performance tips and best practices
-• **Expression Language** - Generate and explain expressions
-• **Documentation** - Answer questions about functionality
-
-What would you like to know about this component?`;
+      const componentName = comp.name || 'component';
+      const componentType = comp.type || 'Processor';
+      
+      const welcomeMsg = `Hello! I'm now ready to help you with the **${componentName}**. What would you like to know?`;
 
       this.addMessage('assistant', welcomeMsg);
       this.renderChatInterface();
+      
+      SuperTabsLogger.info('ChatTab', 'Component context set successfully');
       
     } catch (error) {
       SuperTabsLogger.error('ChatTab', 'Failed to send welcome message', error);
@@ -382,27 +492,66 @@ What would you like to know about this component?`;
   }
 
   async showSuggestions() {
-    const suggestions = [
-      "How do I configure this component?",
-      "What are the available properties?",
-      "How can I troubleshoot errors?",
-      "Show me example configurations",
-      "What relationships are available?",
-      "How can I optimize performance?",
-      "Generate an expression for property X",
-      "Explain the validation errors"
-    ];
+    try {
+      const componentType = this.component?.component?.type || 'component';
+      const suggestions = [
+        `💡 Explain this ${componentType}`,
+        `🔧 Troubleshoot issues`,
+        `⚡ Optimization tips`,
+        `📝 Usage examples`,
+        `⚙️ Configuration help`,
+        `📊 Performance analysis`,
+        `🔍 Expression Language help`,
+        `📚 Best practices`
+      ];
 
-    const suggestionsHtml = suggestions.map(suggestion => 
-      `<button class="supertabs-suggestion-btn" data-suggestion="${suggestion}">${suggestion}</button>`
-    ).join('');
+      // Create suggestions overlay
+      const overlay = document.createElement('div');
+      overlay.className = 'supertabs-suggestions-overlay';
+      overlay.innerHTML = `
+        <div class="supertabs-suggestions-modal">
+          <div class="supertabs-suggestions-header">
+            <h4>Quick Questions</h4>
+            <button class="supertabs-close-suggestions">×</button>
+          </div>
+          <div class="supertabs-suggestions-content">
+            ${suggestions.map(suggestion => 
+              `<button class="supertabs-suggestion-btn" data-suggestion="${suggestion}">${suggestion}</button>`
+            ).join('')}
+          </div>
+        </div>
+      `;
 
-    // Show suggestions modal or insert into chat
-    const input = this.container.querySelector('#supertabs-chat-input');
-    if (input) {
-      // For now, just show the first suggestion
-      input.value = suggestions[0];
-      input.focus();
+      // Add to container
+      this.container.appendChild(overlay);
+
+      // Bind events
+      overlay.querySelector('.supertabs-close-suggestions').addEventListener('click', () => {
+        overlay.remove();
+      });
+
+      overlay.querySelectorAll('.supertabs-suggestion-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const suggestion = btn.dataset.suggestion;
+          const input = this.container.querySelector('#supertabs-chat-input');
+          if (input) {
+            input.value = suggestion;
+            input.focus();
+            input.dispatchEvent(new Event('input')); // Trigger auto-resize
+          }
+          overlay.remove();
+        });
+      });
+
+      // Close on outside click
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+          overlay.remove();
+        }
+      });
+
+    } catch (error) {
+      SuperTabsLogger.error('ChatTab', 'Failed to show suggestions', error);
     }
   }
 
@@ -417,19 +566,34 @@ What would you like to know about this component?`;
 
   showWelcomeState() {
     this.container.innerHTML = `
-      <div class="supertabs-empty">
-        <div class="supertabs-empty-icon">💬</div>
-        <div class="supertabs-empty-title">AI Chat Assistant</div>
-        <div class="supertabs-empty-message">Select a component to start chatting with the AI assistant</div>
-        <div style="margin-top: 16px; font-size: 14px; color: var(--nifi-gray-medium);">
-          <p><strong>I can help you with:</strong></p>
-          <ul style="text-align: left; margin-top: 8px;">
-            <li>Component configuration</li>
-            <li>Troubleshooting issues</li>
-            <li>Performance optimization</li>
-            <li>Expression Language</li>
-            <li>Documentation questions</li>
-          </ul>
+      <div class="supertabs-chat-content">
+        <div class="supertabs-chat-mode-selector">
+          <div class="supertabs-mode-buttons">
+            <button class="supertabs-mode-btn active" data-mode="assistant">🤖 AI Assistant</button>
+            <button class="supertabs-mode-btn" data-mode="instructor">👨‍🏫 Instructor</button>
+          </div>
+          <div class="supertabs-mode-status">🟢 AI Assistant Mode</div>
+        </div>
+        
+        <div class="supertabs-chat-context">
+          <div class="supertabs-context-header">🎯 Active Context</div>
+          <div class="supertabs-context-info">
+            <div class="supertabs-context-component">
+              <strong>No Component Selected</strong>
+              <span>Select a component to start</span>
+            </div>
+            <div class="supertabs-context-status">⚫ WAITING</div>
+          </div>
+        </div>
+        
+        <div class="supertabs-chat-welcome">
+          <div class="supertabs-welcome-content">
+            <div class="supertabs-welcome-icon">🤖</div>
+            <div class="supertabs-welcome-message">
+              <h4>Hello! I'm your NiFi AI Assistant</h4>
+              <p>I can help you with component analysis, configuration questions, and troubleshooting. Select a component to get started!</p>
+            </div>
+          </div>
         </div>
       </div>
     `;
