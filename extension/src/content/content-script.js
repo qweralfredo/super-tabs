@@ -1,71 +1,102 @@
 // SuperTabs - Main Content Script
 // Coordinates all extension functionality on NiFi pages
 
-// Simple Logger utility
-const SuperTabsLogger = {
-  debug: (msg, data) => console.log(`[SuperTabs DEBUG] ${msg}`, data || ''),
-  info: (msg, data) => console.log(`[SuperTabs INFO] ${msg}`, data || ''),
-  warn: (msg, data) => console.warn(`[SuperTabs WARN] ${msg}`, data || ''),
-  error: (msg, data) => console.error(`[SuperTabs ERROR] ${msg}`, data || ''),
-  init: async () => { /* Logger initialization - placeholder */ },
-  logUserAction: (action, data) => console.log(`[SuperTabs ACTION] ${action}`, data || ''),
-  logNiFiPageState: (state) => console.log(`[SuperTabs PAGE] State: ${state}`)
+// Wait for global utilities to be available
+const waitForUtilities = async () => {
+  let attempts = 0;
+  const maxAttempts = 20;
+  
+  while (attempts < maxAttempts) {
+    if (window.SuperTabsLogger && window.superTabsStorage) {
+      return true;
+    }
+    await new Promise(resolve => setTimeout(resolve, 100));
+    attempts++;
+  }
+  
+  console.warn('[SuperTabs] Utilities not available, using fallbacks');
+  return false;
 };
 
-// Simple Storage utility
-const SuperTabsStorage = {
-  getSettings: async () => {
-    try {
-      const result = await chrome.storage.sync.get({
-        sidebarVisible: true,
-        autoShowSidebar: true,
-        enableNotifications: true,
-        debugMode: false,
-        sidebarWidth: 400
-      });
-      return result;
-    } catch (error) {
-      SuperTabsLogger.warn('Failed to load settings, using defaults', error);
-      return {
-        sidebarVisible: true,
-        autoShowSidebar: true,
-        enableNotifications: true,
-        debugMode: false,
-        sidebarWidth: 400
+// Initialize utilities or create fallbacks
+const initializeUtilities = async () => {
+  const utilitiesAvailable = await waitForUtilities();
+  
+  if (!utilitiesAvailable) {
+    // Create minimal fallbacks only if utilities aren't available
+    if (!window.SuperTabsLogger) {
+      window.SuperTabsLogger = {
+        debug: (msg, data) => console.log(`[SuperTabs DEBUG] ${msg}`, data || ''),
+        info: (msg, data) => console.log(`[SuperTabs INFO] ${msg}`, data || ''),
+        warn: (msg, data) => console.warn(`[SuperTabs WARN] ${msg}`, data || ''),
+        error: (msg, data) => console.error(`[SuperTabs ERROR] ${msg}`, data || ''),
+        init: async () => { /* Logger initialization - placeholder */ },
+        logUserAction: (action, data) => console.log(`[SuperTabs ACTION] ${action}`, data || ''),
+        logNiFiPageState: (state) => console.log(`[SuperTabs PAGE] State: ${state}`)
       };
     }
-  },
-  
-  saveSettings: async (settings) => {
-    try {
-      await chrome.storage.sync.set(settings);
-      SuperTabsLogger.debug('Settings saved', settings);
-    } catch (error) {
-      SuperTabsLogger.error('Failed to save settings', error);
-    }
-  },
+    
+    if (!window.superTabsStorage) {
+      window.superTabsStorage = {
+        getSettings: async () => {
+          try {
+            const result = await chrome.storage.sync.get({
+              sidebarVisible: true,
+              autoShowSidebar: true,
+              enableNotifications: true,
+              debugMode: false,
+              sidebarWidth: 400
+            });
+            return result;
+          } catch (error) {
+            window.SuperTabsLogger?.warn('Failed to load settings, using defaults', error);
+            return {
+              sidebarVisible: true,
+              autoShowSidebar: true,
+              enableNotifications: true,
+              debugMode: false,
+              sidebarWidth: 400
+            };
+          }
+        },
+        
+        saveSettings: async (settings) => {
+          try {
+            await chrome.storage.sync.set(settings);
+            window.SuperTabsLogger?.debug('Settings saved', settings);
+          } catch (error) {
+            window.SuperTabsLogger?.error('Failed to save settings', error);
+          }
+        },
 
-  getChatHistory: async (componentId) => {
-    try {
-      const key = `chat_history_${componentId}`;
-      const result = await chrome.storage.local.get(key);
-      return result[key] || [];
-    } catch (error) {
-      SuperTabsLogger.error('Failed to get chat history', error);
-      return [];
-    }
-  },
+        getChatHistory: async (componentId) => {
+          try {
+            const key = `chat_history_${componentId}`;
+            const result = await chrome.storage.local.get(key);
+            return result[key] || [];
+          } catch (error) {
+            window.SuperTabsLogger?.error('Failed to get chat history', error);
+            return [];
+          }
+        },
 
-  saveChatHistory: async (componentId, history) => {
-    try {
-      const key = `chat_history_${componentId}`;
-      await chrome.storage.local.set({ [key]: history });
-      SuperTabsLogger.debug('Chat history saved', { componentId, messages: history.length });
-    } catch (error) {
-      SuperTabsLogger.error('Failed to save chat history', error);
+        saveChatHistory: async (componentId, history) => {
+          try {
+            const key = `chat_history_${componentId}`;
+            await chrome.storage.local.set({ [key]: history });
+            window.SuperTabsLogger?.debug('Chat history saved', { componentId, messages: history.length });
+          } catch (error) {
+            window.SuperTabsLogger?.error('Failed to save chat history', error);
+          }
+        }
+      };
     }
   }
 };
+
+// Aliases for compatibility
+const SuperTabsLogger = window.SuperTabsLogger;
+const SuperTabsStorage = window.superTabsStorage;
 
 class SuperTabsContentScript {
   constructor() {
@@ -78,6 +109,9 @@ class SuperTabsContentScript {
 
   async init() {
     try {
+      // Initialize utilities first
+      await initializeUtilities();
+      
       // Wait for NiFi to be ready
       await this.waitForNiFi();
       
@@ -96,10 +130,10 @@ class SuperTabsContentScript {
       // Mark as initialized
       this.isInitialized = true;
       
-      SuperTabsLogger.info('SuperTabs Content Script initialized');
+      window.SuperTabsLogger?.info('SuperTabs Content Script initialized');
       this.notifyReady();
     } catch (error) {
-      SuperTabsLogger.error('Failed to initialize SuperTabs', error);
+      window.SuperTabsLogger?.error('Failed to initialize SuperTabs', error);
     }
   }
 
@@ -117,7 +151,7 @@ class SuperTabsContentScript {
         ].filter(Boolean);
 
         if (nifiElements.length > 0) {
-          SuperTabsLogger.info('NiFi UI detected and ready');
+          window.SuperTabsLogger?.info('NiFi UI detected and ready');
           resolve();
         } else {
           setTimeout(checkNiFi, 500);
@@ -131,63 +165,63 @@ class SuperTabsContentScript {
 
   async initializeCore() {
     // Initialize storage
-    if (typeof SuperTabsStorage !== 'undefined') {
-      SuperTabsLogger.debug('Storage system ready');
+    if (window.superTabsStorage) {
+      window.SuperTabsLogger?.debug('Storage system ready');
     }
 
     // Initialize logger
-    if (typeof SuperTabsLogger !== 'undefined') {
-      await SuperTabsLogger.init();
+    if (window.SuperTabsLogger) {
+      await window.SuperTabsLogger.init();
     }
 
     // Initialize NiFi API client
-    if (typeof nifiApiClient !== 'undefined' && nifiApiClient.authenticate) {
-      await nifiApiClient.authenticate();
+    if (window.nifiApiClient && window.nifiApiClient.authenticate) {
+      await window.nifiApiClient.authenticate();
     } else {
-      SuperTabsLogger.warn('NiFi API Client not available');
+      window.SuperTabsLogger?.warn('NiFi API Client not available');
     }
 
     // Initialize PHI-3 agent
-    if (typeof phi3Agent !== 'undefined' && phi3Agent.initialize) {
-      await phi3Agent.initialize();
+    if (window.phi3Agent && window.phi3Agent.initialize) {
+      await window.phi3Agent.initialize();
     } else {
-      SuperTabsLogger.warn('PHI-3 Agent not available');
+      window.SuperTabsLogger?.warn('PHI-3 Agent not available');
     }
   }
 
   async loadSettings() {
     this.settings = await SuperTabsStorage.getSettings();
-    SuperTabsLogger.debug('Settings loaded', this.settings);
+    window.SuperTabsLogger?.debug('Settings loaded', this.settings);
   }
 
   async initializeComponents() {
     // Initialize Canvas Detector
-    if (typeof canvasDetector !== 'undefined') {
-      await canvasDetector.init();
-      SuperTabsLogger.debug('Canvas Detector initialized');
+    if (window.canvasDetector) {
+      await window.canvasDetector.init();
+      window.SuperTabsLogger?.debug('Canvas Detector initialized');
     } else {
-      SuperTabsLogger.warn('Canvas Detector not available');
+      window.SuperTabsLogger?.warn('Canvas Detector not available');
     }
 
     // Initialize Sidebar (will be created when needed)
     if (typeof SuperTabsSidebar !== 'undefined') {
       this.sidebar = new SuperTabsSidebar();
       await this.sidebar.initialize();
-      SuperTabsLogger.debug('Sidebar ready');
+      window.SuperTabsLogger?.debug('Sidebar ready');
     }
 
     // Initialize Alignment Tool
     if (typeof SuperTabsAlignmentTool !== 'undefined') {
       this.alignmentTool = new SuperTabsAlignmentTool();
       await this.alignmentTool.initialize();
-      SuperTabsLogger.debug('Alignment Tool ready');
+      window.SuperTabsLogger?.debug('Alignment Tool ready');
     }
 
     // Initialize Expression Generator
     if (typeof SuperTabsExpressionGenerator !== 'undefined') {
       this.expressionGenerator = new SuperTabsExpressionGenerator();
       await this.expressionGenerator.initialize();
-      SuperTabsLogger.debug('Expression Generator ready');
+      window.SuperTabsLogger?.debug('Expression Generator ready');
     }
 
     // Setup component interactions
@@ -196,8 +230,8 @@ class SuperTabsContentScript {
 
   setupComponentInteractions() {
     // Listen for canvas detector events
-    if (canvasDetector) {
-      canvasDetector.addClickListener((type, componentInfo, event) => {
+    if (window.canvasDetector) {
+      window.canvasDetector.addClickListener((type, componentInfo, event) => {
         this.handleCanvasInteraction(type, componentInfo, event);
       });
     }
@@ -226,7 +260,7 @@ class SuperTabsContentScript {
   }
 
   async handleRuntimeMessage(message, sender, sendResponse) {
-    SuperTabsLogger.debug('Content script received message', message);
+    window.SuperTabsLogger?.debug('Content script received message', message);
 
     try {
       switch (message.action) {
@@ -252,8 +286,8 @@ class SuperTabsContentScript {
         case 'GET_STATUS':
           sendResponse({
             initialized: this.isInitialized,
-            nifiDetected: !!canvasDetector?.canvasElement,
-            componentsFound: canvasDetector?.getAllComponents()?.length || 0
+            nifiDetected: !!window.canvasDetector?.canvasElement,
+            componentsFound: window.canvasDetector?.getAllComponents()?.length || 0
           });
           break;
 
@@ -263,17 +297,17 @@ class SuperTabsContentScript {
           break;
 
         default:
-          SuperTabsLogger.warn('Unknown message action', message.action);
+          window.SuperTabsLogger?.warn('Unknown message action', message.action);
           sendResponse({ success: false, error: 'Unknown action' });
       }
     } catch (error) {
-      SuperTabsLogger.error('Error handling runtime message', error);
+      window.SuperTabsLogger?.error('Error handling runtime message', error);
       sendResponse({ success: false, error: error.message });
     }
   }
 
   handleCanvasInteraction(type, componentInfo, event) {
-    SuperTabsLogger.logUserAction(`Canvas interaction: ${type}`, { componentInfo });
+    window.SuperTabsLogger?.logUserAction(`Canvas interaction: ${type}`, { componentInfo });
 
     if (type === 'component' && componentInfo) {
       this.handleComponentClick(componentInfo, event);
@@ -285,28 +319,28 @@ class SuperTabsContentScript {
   }
 
   async handleComponentClick(componentInfo, event) {
-    SuperTabsLogger.debug('Handling component click', componentInfo);
+    window.SuperTabsLogger?.debug('Handling component click', componentInfo);
     
     if (this.settings.autoShowSidebar && this.sidebar) {
       await this.sidebar.showForComponent(componentInfo);
     }
 
     // Highlight clicked component
-    if (canvasDetector && canvasDetector.highlightComponent) {
-      canvasDetector.highlightComponent(componentInfo.id);
+    if (window.canvasDetector && window.canvasDetector.highlightComponent) {
+      window.canvasDetector.highlightComponent(componentInfo.id);
     }
   }
 
   async handleFlowFileClick(flowFileInfo, event) {
-    SuperTabsLogger.debug('Handling FlowFile click', flowFileInfo);
+    window.SuperTabsLogger?.debug('Handling FlowFile click', flowFileInfo);
     
     if (this.settings.autoShowSidebar && this.sidebar) {
       await this.sidebar.showForComponent(flowFileInfo);
     }
 
     // Highlight clicked FlowFile
-    if (canvasDetector && canvasDetector.highlightFlowFile) {
-      canvasDetector.highlightFlowFile(flowFileInfo.uuid || flowFileInfo.id);
+    if (window.canvasDetector && window.canvasDetector.highlightFlowFile) {
+      window.canvasDetector.highlightFlowFile(flowFileInfo.uuid || flowFileInfo.id);
     }
   }
 
@@ -327,7 +361,7 @@ class SuperTabsContentScript {
   }
 
   handleNiFiPageReady() {
-    SuperTabsLogger.logNiFiPageState('ready');
+    window.SuperTabsLogger?.logNiFiPageState('ready');
   }
 
   // Public API methods
@@ -339,7 +373,7 @@ class SuperTabsContentScript {
       return false;
     } else {
       // Show with current selected component or empty
-      const selectedComponent = canvasDetector?.getSelectedComponent();
+      const selectedComponent = window.canvasDetector?.getSelectedComponent();
       if (selectedComponent) {
         await this.sidebar.showForComponent(selectedComponent);
       } else {
@@ -351,7 +385,7 @@ class SuperTabsContentScript {
 
   async openExpressionGenerator() {
     if (!this.expressionGenerator) {
-      SuperTabsLogger.warn('Expression Generator not available');
+      window.SuperTabsLogger?.warn('Expression Generator not available');
       return;
     }
 
@@ -367,7 +401,7 @@ class SuperTabsContentScript {
       const result = await this.alignmentTool.autoAlign();
       return { success: true, aligned: result.aligned };
     } catch (error) {
-      SuperTabsLogger.error('Auto alignment failed', error);
+      window.SuperTabsLogger?.error('Auto alignment failed', error);
       return { success: false, error: error.message };
     }
   }
@@ -380,11 +414,11 @@ class SuperTabsContentScript {
     }
 
     // Notify components of settings change
-    if (canvasDetector) {
-      await canvasDetector.setAutoOpen(this.settings.autoOpen);
+    if (window.canvasDetector) {
+      await window.canvasDetector.setAutoOpen(this.settings.autoOpen);
     }
 
-    SuperTabsLogger.info('Settings updated in content script');
+    window.SuperTabsLogger?.info('Settings updated in content script');
   }
 
   notifyReady() {
@@ -406,7 +440,7 @@ class SuperTabsContentScript {
   // Error recovery
   async recover() {
     try {
-      SuperTabsLogger.warn('Attempting to recover SuperTabs...');
+      window.SuperTabsLogger?.warn('Attempting to recover SuperTabs...');
       
       // Re-initialize if needed
       if (!this.isInitialized) {
@@ -415,20 +449,20 @@ class SuperTabsContentScript {
       }
 
       // Check and fix components
-      if (!canvasDetector?.isActive) {
-        await canvasDetector?.init();
+      if (!window.canvasDetector?.isActive) {
+        await window.canvasDetector?.init();
       }
 
-      SuperTabsLogger.info('SuperTabs recovery successful');
+      window.SuperTabsLogger?.info('SuperTabs recovery successful');
     } catch (error) {
-      SuperTabsLogger.error('SuperTabs recovery failed', error);
+      window.SuperTabsLogger?.error('SuperTabs recovery failed', error);
     }
   }
 
   // Cleanup
   destroy() {
-    if (canvasDetector) {
-      canvasDetector.destroy();
+    if (window.canvasDetector) {
+      window.canvasDetector.destroy();
     }
 
     if (this.sidebar) {
@@ -444,7 +478,7 @@ class SuperTabsContentScript {
     }
 
     this.isInitialized = false;
-    SuperTabsLogger.info('SuperTabs Content Script destroyed');
+    window.SuperTabsLogger?.info('SuperTabs Content Script destroyed');
   }
 }
 
@@ -452,12 +486,15 @@ class SuperTabsContentScript {
 const superTabsContentScript = new SuperTabsContentScript();
 
 // Auto-initialize when script loads
+const initializeScript = async () => {
+  await initializeUtilities();
+  await superTabsContentScript.init();
+};
+
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
-    superTabsContentScript.init();
-  });
+  document.addEventListener('DOMContentLoaded', initializeScript);
 } else {
-  superTabsContentScript.init();
+  initializeScript();
 }
 
 // Handle page visibility changes
@@ -473,6 +510,6 @@ window.superTabsContentScript = superTabsContentScript;
 // Periodic health check
 setInterval(() => {
   if (superTabsContentScript.isInitialized) {
-    SuperTabsLogger.debug('SuperTabs health check: OK');
+    window.SuperTabsLogger?.debug('SuperTabs health check: OK');
   }
 }, 30000);

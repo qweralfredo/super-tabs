@@ -1,13 +1,13 @@
 /**
- * PHI-3 Agent - Simplified version for Chrome Extension
- * Handles AI interactions with PHI-3 and Claude fallback
+ * PHI-4 Agent - Simplified version for Chrome Extension
+ * Handles AI interactions with PHI-4 and Claude fallback
  */
 
-class PHI3Agent {
+class PHI4Agent {
   constructor() {
-    this.modelPrimary = 'phi-3';
-    this.modelFallback = 'claude-sonnet-4.5';
-    this.apiEndpoint = 'https://api.phi3.ai/v1/chat/completions'; // Placeholder
+    this.modelPrimary = 'phi-4';
+    this.modelFallback = 'claude-3-haiku';
+    this.apiEndpoint = 'https://api.phi4.ai/v1/chat/completions'; // Placeholder
     this.claudeEndpoint = 'https://api.anthropic.com/v1/messages'; // Placeholder
     this.apiKey = null;
     this.claudeKey = null;

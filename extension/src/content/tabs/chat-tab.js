@@ -16,9 +16,9 @@ class SuperTabsChatTab {
     try {
       await this.createInterface();
       this.isInitialized = true;
-      SuperTabsLogger.debug('ChatTab', 'Chat tab initialized successfully');
+      window.SuperTabsLogger?.debug('ChatTab', 'Chat tab initialized successfully');
     } catch (error) {
-      SuperTabsLogger.error('ChatTab', 'Failed to initialize chat tab', error);
+      window.SuperTabsLogger?.error('ChatTab', 'Failed to initialize chat tab', error);
     }
   }
 
