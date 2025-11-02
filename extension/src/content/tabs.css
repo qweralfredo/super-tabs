@@ -1131,3 +1131,145 @@
   outline-offset: 1px;
   cursor: pointer;
 }
+
+/* FlowFile Specific Styles */
+
+/* FlowFile Tooltip */
+.supertabs-tooltip {
+  position: absolute;
+  background: var(--nifi-gray-darkest);
+  color: white;
+  padding: var(--nifi-spacing-sm);
+  border-radius: var(--nifi-border-radius);
+  font-size: var(--nifi-font-size-small);
+  box-shadow: var(--nifi-shadow-lg);
+  z-index: 10000;
+  max-width: 300px;
+  display: none;
+}
+
+.flowfile-tooltip-content h4 {
+  margin: 0 0 var(--nifi-spacing-xs) 0;
+  color: var(--nifi-accent-blue);
+  font-size: var(--nifi-font-size-base);
+}
+
+.flowfile-tooltip-content p {
+  margin: var(--nifi-spacing-xs) 0;
+  line-height: 1.3;
+}
+
+.flowfile-tooltip-content strong {
+  color: var(--nifi-light-blue);
+}
+
+/* FlowFile Context Menu */
+.supertabs-context-menu {
+  position: absolute;
+  background: var(--nifi-surface);
+  border: 1px solid var(--nifi-border);
+  border-radius: var(--nifi-border-radius);
+  box-shadow: var(--nifi-shadow-lg);
+  z-index: 10001;
+  min-width: 180px;
+  display: none;
+}
+
+.context-menu-item {
+  padding: var(--nifi-spacing-sm) var(--nifi-spacing-md);
+  cursor: pointer;
+  font-size: var(--nifi-font-size-small);
+  color: var(--nifi-gray-dark);
+  border-bottom: 1px solid var(--nifi-gray-lighter);
+  transition: var(--nifi-transition);
+}
+
+.context-menu-item:last-child {
+  border-bottom: none;
+}
+
+.context-menu-item:hover {
+  background: var(--nifi-light-blue);
+  color: var(--nifi-primary-blue);
+}
+
+/* FlowFile Highlighting */
+.flowfile.supertabs-selected,
+.flow-file.supertabs-selected,
+.flowfile-row.supertabs-selected,
+tr.supertabs-selected {
+  background: rgba(45, 79, 145, 0.1) !important;
+  border: 2px solid var(--nifi-primary-blue) !important;
+}
+
+.flowfile.supertabs-hover,
+.flow-file.supertabs-hover,
+.flowfile-row.supertabs-hover,
+tr.supertabs-hover {
+  background: rgba(93, 167, 219, 0.1) !important;
+  border: 1px solid var(--nifi-accent-blue) !important;
+  cursor: pointer;
+}
+
+/* FlowFile Notification */
+.supertabs-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: var(--nifi-primary-blue);
+  color: white;
+  padding: var(--nifi-spacing-md) var(--nifi-spacing-lg);
+  border-radius: var(--nifi-border-radius);
+  z-index: 10000;
+  font-size: var(--nifi-font-size-base);
+  box-shadow: var(--nifi-shadow-lg);
+  animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* FlowFile Table Enhancements */
+.flowfile-listing-table tbody tr {
+  transition: var(--nifi-transition);
+}
+
+.flowfile-listing-table tbody tr:hover {
+  background-color: var(--nifi-light-blue);
+}
+
+.flowfile-listing-table tbody tr.selected {
+  background-color: rgba(45, 79, 145, 0.1);
+}
+
+/* FlowFile Queue Visualization */
+.flowfile-queue-indicator {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: var(--nifi-spacing-xs);
+}
+
+.flowfile-queue-indicator.active {
+  background: var(--nifi-success-green);
+  box-shadow: 0 0 4px rgba(92, 184, 92, 0.5);
+}
+
+.flowfile-queue-indicator.queued {
+  background: var(--nifi-warning-orange);
+  box-shadow: 0 0 4px rgba(240, 173, 78, 0.5);
+}
+
+.flowfile-queue-indicator.error {
+  background: var(--nifi-error-red);
+  box-shadow: 0 0 4px rgba(217, 83, 79, 0.5);
+}

@@ -213,7 +213,7 @@ class SuperTabsSidebar {
         this.element.style.width = `${newWidth}px`;
       };
 
-      const handleMouseUp = () => {
+      const handleMouseUp = async () => {
         this.isResizing = false;
         document.body.style.cursor = '';
         document.body.style.userSelect = '';
@@ -221,7 +221,9 @@ class SuperTabsSidebar {
         document.removeEventListener('mouseup', handleMouseUp);
         
         // Save width preference
-        SuperTabsStorage.setSetting('sidebarWidth', this.resizeWidth);
+        const settings = await SuperTabsStorage.getSettings();
+        settings.sidebarWidth = this.resizeWidth;
+        await SuperTabsStorage.saveSettings(settings);
       };
 
       document.addEventListener('mousemove', handleMouseMove);
@@ -247,7 +249,8 @@ class SuperTabsSidebar {
       }, 300);
 
       // Load saved preferences
-      const savedWidth = await SuperTabsStorage.getSetting('sidebarWidth');
+      const settings = await SuperTabsStorage.getSettings();
+      const savedWidth = settings.sidebarWidth;
       if (savedWidth && savedWidth !== this.resizeWidth) {
         this.resizeWidth = savedWidth;
         this.element.style.width = `${this.resizeWidth}px`;
@@ -257,6 +260,10 @@ class SuperTabsSidebar {
     } catch (error) {
       SuperTabsLogger.error('Sidebar', 'Failed to show sidebar', error);
     }
+  }
+
+  async showForComponent(component) {
+    return await this.show(component);
   }
 
   hide() {

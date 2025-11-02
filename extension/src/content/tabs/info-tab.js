@@ -88,7 +88,7 @@ class SuperTabsInfoTab {
 
   async setComponent(component) {
     try {
-      SuperTabsLogger.debug('InfoTab', 'Setting component', { id: component?.id });
+      SuperTabsLogger.debug('InfoTab', 'Setting component', { id: component?.id, isFlowFile: component?.isFlowFile });
       
       this.currentComponent = component;
       
@@ -97,11 +97,18 @@ class SuperTabsInfoTab {
         return;
       }
 
-      await this.displayComponentInfo(component);
-      await this.generateInsights(component);
-      await this.loadUseCases(component);
+      // Check if this is a FlowFile
+      if (component.isFlowFile) {
+        await this.displayFlowFileInfo(component);
+        await this.generateFlowFileInsights(component);
+        await this.loadFlowFileUseCases(component);
+      } else {
+        await this.displayComponentInfo(component);
+        await this.generateInsights(component);
+        await this.loadUseCases(component);
+      }
       
-      SuperTabsLogger.info('InfoTab', 'Component information loaded successfully');
+      SuperTabsLogger.info('InfoTab', 'Component/FlowFile information loaded successfully');
     } catch (error) {
       SuperTabsLogger.error('InfoTab', 'Failed to set component', error);
       this.showError('Failed to load component information');
@@ -193,6 +200,262 @@ class SuperTabsInfoTab {
         </div>
       </div>
     `;
+  }
+
+  async displayFlowFileInfo(flowFile) {
+    const detailsContainer = this.container.querySelector('#component-details');
+    
+    const filename = flowFile.filename || 'Unknown File';
+    const uuid = flowFile.uuid || 'N/A';
+    const fileSize = flowFile.fileSize || 'Unknown';
+    const queueDuration = flowFile.queueDuration || 'N/A';
+    const lineageDuration = flowFile.lineageDuration || 'N/A';
+    const connectionId = flowFile.connectionId || 'N/A';
+    const attributesCount = flowFile.attributesCount || 'Unknown';
+
+    detailsContainer.innerHTML = `
+      <div class="supertabs-component-header">
+        <div class="supertabs-component-title">
+          <h3>${filename}</h3>
+          <span class="supertabs-component-type">FlowFile</span>
+        </div>
+        <div class="supertabs-component-status ${this.getFlowFileStatusClass(flowFile)}">
+          <div class="supertabs-status-indicator"></div>
+          <span>${this.getFlowFileStatusText(flowFile)}</span>
+        </div>
+      </div>
+
+      <div class="supertabs-component-metadata">
+        <div class="supertabs-metadata-item">
+          <strong>UUID</strong>
+          <code title="${uuid}">${uuid ? uuid.substring(0, 13) + '...' : 'N/A'}</code>
+        </div>
+        
+        <div class="supertabs-metadata-item">
+          <strong>File Size</strong>
+          <span>${fileSize}</span>
+        </div>
+        
+        <div class="supertabs-metadata-item">
+          <strong>Queue Duration</strong>
+          <span>${queueDuration}</span>
+        </div>
+        
+        ${lineageDuration !== 'N/A' ? `
+        <div class="supertabs-metadata-item">
+          <strong>Lineage Duration</strong>
+          <span>${lineageDuration}</span>
+        </div>` : ''}
+        
+        ${connectionId !== 'N/A' ? `
+        <div class="supertabs-metadata-item">
+          <strong>Connection</strong>
+          <span>${connectionId}</span>
+        </div>` : ''}
+        
+        <div class="supertabs-metadata-item">
+          <strong>Attributes</strong>
+          <span>${attributesCount} attributes</span>
+        </div>
+        
+        ${flowFile.tooltipData ? `
+        <div class="supertabs-metadata-item">
+          <strong>Additional Info</strong>
+          <span>${JSON.stringify(flowFile.tooltipData, null, 2)}</span>
+        </div>` : ''}
+      </div>
+
+      <div class="supertabs-flowfile-actions">
+        <button class="supertabs-action-btn" onclick="window.canvasDetector?.showFlowFileAttributes?.(${JSON.stringify(flowFile).replace(/"/g, '&quot;')})">
+          <span class="icon">📋</span>
+          View Attributes
+        </button>
+        <button class="supertabs-action-btn" onclick="window.canvasDetector?.showFlowFileContent?.(${JSON.stringify(flowFile).replace(/"/g, '&quot;')})">
+          <span class="icon">📄</span>
+          View Content
+        </button>
+        <button class="supertabs-action-btn" onclick="window.canvasDetector?.showFlowFileLineage?.(${JSON.stringify(flowFile).replace(/"/g, '&quot;')})">
+          <span class="icon">🔗</span>
+          View Lineage
+        </button>
+        <button class="supertabs-action-btn" onclick="window.canvasDetector?.downloadFlowFileContent?.(${JSON.stringify(flowFile).replace(/"/g, '&quot;')})">
+          <span class="icon">⬇️</span>
+          Download
+        </button>
+      </div>
+    `;
+  }
+
+  getFlowFileStatusClass(flowFile) {
+    if (flowFile.subType === 'active') return 'success';
+    if (flowFile.subType === 'queued') return 'warning';
+    if (flowFile.subType === 'selected') return 'info';
+    return 'secondary';
+  }
+
+  getFlowFileStatusText(flowFile) {
+    switch (flowFile.subType) {
+      case 'active': return 'Active';
+      case 'queued': return 'Queued';
+      case 'selected': return 'Selected';
+      case 'listing': return 'In Queue Listing';
+      default: return 'Unknown State';
+    }
+  }
+
+  async generateFlowFileInsights(flowFile) {
+    const insightsContent = this.container.querySelector('#insights-content');
+    
+    try {
+      // Use PHI-3 agent to generate FlowFile insights
+      if (window.phi3Agent) {
+        const insights = await window.phi3Agent.generateResponse(
+          `Analyze this NiFi FlowFile and provide insights about its properties, processing status, and potential issues: ${JSON.stringify(flowFile, null, 2)}`,
+          { flowFile }
+        );
+        
+        insightsContent.innerHTML = `
+          <div class="supertabs-insights-text">
+            ${this.formatInsightsText(insights)}
+          </div>
+        `;
+      } else {
+        // Fallback static insights for FlowFiles
+        const staticInsights = this.getStaticFlowFileInsights(flowFile);
+        insightsContent.innerHTML = `
+          <div class="supertabs-insights-list">
+            ${staticInsights.map(insight => 
+              `<div class="supertabs-insight-item">💡 ${insight}</div>`
+            ).join('')}
+          </div>
+        `;
+      }
+    } catch (error) {
+      SuperTabsLogger.error('InfoTab', 'Failed to generate FlowFile insights', error);
+      insightsContent.innerHTML = '<div class="supertabs-error">Failed to generate insights</div>';
+    }
+  }
+
+  getStaticFlowFileInsights(flowFile) {
+    const insights = [];
+    
+    // File size analysis
+    if (flowFile.fileSize) {
+      const size = flowFile.fileSize.toLowerCase();
+      if (size.includes('mb') || size.includes('gb')) {
+        insights.push('Large file detected - consider using streaming processors for better performance');
+      } else if (size.includes('kb') || size.includes('bytes')) {
+        insights.push('Small file size - good for batch processing');
+      }
+    }
+
+    // Queue duration analysis
+    if (flowFile.queueDuration) {
+      const duration = flowFile.queueDuration.toLowerCase();
+      if (duration.includes('min') || duration.includes('hour')) {
+        insights.push('FlowFile has been queued for a while - check for processing bottlenecks');
+      } else {
+        insights.push('FlowFile is processing with normal queue times');
+      }
+    }
+
+    // Filename analysis
+    if (flowFile.filename) {
+      const filename = flowFile.filename.toLowerCase();
+      if (filename.includes('.json')) {
+        insights.push('JSON file - consider using JSON processors for parsing and transformation');
+      } else if (filename.includes('.xml')) {
+        insights.push('XML file - use XML processors for parsing and validation');
+      } else if (filename.includes('.csv')) {
+        insights.push('CSV file - consider using record-based processors for better performance');
+      } else if (filename.includes('.txt') || filename.includes('.log')) {
+        insights.push('Text/Log file - use text processing and regex processors');
+      }
+    }
+
+    // Connection analysis
+    if (flowFile.connectionId) {
+      insights.push('FlowFile is currently in a connection queue - check downstream processor availability');
+    }
+
+    // Default insights
+    if (insights.length === 0) {
+      insights.push('FlowFile is progressing through the data flow');
+      insights.push('Monitor attributes and content for data validation');
+      insights.push('Check lineage for processing history');
+    }
+
+    return insights;
+  }
+
+  async loadFlowFileUseCases(flowFile) {
+    const useCasesContent = this.container.querySelector('#use-cases-content');
+    
+    if (!useCasesContent) return;
+
+    const useCases = this.getFlowFileUseCases(flowFile);
+    
+    useCasesContent.innerHTML = `
+      <div class="supertabs-use-cases-list">
+        ${useCases.map(useCase => `
+          <div class="supertabs-use-case">
+            <h5>${useCase.title}</h5>
+            <p>${useCase.description}</p>
+            ${useCase.action ? `<button class="supertabs-use-case-action" onclick="${useCase.action}">${useCase.actionLabel}</button>` : ''}
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  getFlowFileUseCases(flowFile) {
+    const useCases = [
+      {
+        title: 'View FlowFile Attributes',
+        description: 'Examine all attributes associated with this FlowFile to understand its metadata and processing context.',
+        action: `window.canvasDetector?.showFlowFileAttributes?.(${JSON.stringify(flowFile).replace(/"/g, '\\"')})`,
+        actionLabel: 'View Attributes'
+      },
+      {
+        title: 'Inspect Content',
+        description: 'Preview the actual content of this FlowFile to understand its structure and data.',
+        action: `window.canvasDetector?.showFlowFileContent?.(${JSON.stringify(flowFile).replace(/"/g, '\\"')})`,
+        actionLabel: 'View Content'
+      },
+      {
+        title: 'Trace Lineage',
+        description: 'Follow the processing lineage to see how this FlowFile was created and transformed.',
+        action: `window.canvasDetector?.showFlowFileLineage?.(${JSON.stringify(flowFile).replace(/"/g, '\\"')})`,
+        actionLabel: 'View Lineage'
+      }
+    ];
+
+    // Add specific use cases based on file type
+    if (flowFile.filename) {
+      const filename = flowFile.filename.toLowerCase();
+      
+      if (filename.includes('.json')) {
+        useCases.push({
+          title: 'JSON Processing',
+          description: 'Use EvaluateJsonPath, JoltTransformJSON, or SplitJson processors for JSON manipulation.',
+          actionLabel: 'Learn More'
+        });
+      } else if (filename.includes('.xml')) {
+        useCases.push({
+          title: 'XML Processing', 
+          description: 'Use EvaluateXPath, TransformXml, or SplitXml processors for XML processing.',
+          actionLabel: 'Learn More'
+        });
+      } else if (filename.includes('.csv')) {
+        useCases.push({
+          title: 'Record Processing',
+          description: 'Use ConvertRecord, QueryRecord, or SplitRecord for efficient CSV processing.',
+          actionLabel: 'Learn More'
+        });
+      }
+    }
+
+    return useCases;
   }
 
   async generateInsights(component) {

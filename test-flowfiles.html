@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SuperTabs - FlowFile Detection Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .nifi-canvas {
+            width: 100%;
+            height: 600px;
+            background: white;
+            border: 1px solid #ccc;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        .processor {
+            position: absolute;
+            width: 120px;
+            height: 60px;
+            background: #e8f4fd;
+            border: 2px solid #2d4f91;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .processor:hover {
+            background: #d1e7ff;
+        }
+        
+        .processor1 {
+            top: 100px;
+            left: 100px;
+        }
+        
+        .processor2 {
+            top: 200px;
+            left: 300px;
+        }
+        
+        .processor3 {
+            top: 300px;
+            left: 500px;
+        }
+        
+        .connection {
+            position: absolute;
+            height: 2px;
+            background: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .connection1 {
+            top: 129px;
+            left: 220px;
+            width: 80px;
+        }
+        
+        .connection2 {
+            top: 229px;
+            left: 420px;
+            width: 80px;
+        }
+        
+        /* FlowFile Queue Listing Simulation */
+        .queue-listing {
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .queue-listing h3 {
+            margin: 0;
+            padding: 12px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #ccc;
+        }
+        
+        .flowfile-listing-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .flowfile-listing-table th,
+        .flowfile-listing-table td {
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .flowfile-listing-table th {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+        
+        .flowfile-listing-table tbody tr {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .flowfile-listing-table tbody tr:hover {
+            background-color: #f0f8ff;
+        }
+        
+        .flowfile-icon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background: #2d4f91;
+            border-radius: 2px;
+            margin-right: 8px;
+        }
+        
+        .queue-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #f0ad4e;
+            color: white;
+            border-radius: 10px;
+            padding: 2px 6px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
+        .info-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 300px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .test-log {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 2px 0;
+        }
+        
+        .log-entry.info { color: #2d4f91; }
+        .log-entry.success { color: #5cb85c; }
+        .log-entry.warning { color: #f0ad4e; }
+        .log-entry.error { color: #d9534f; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 SuperTabs FlowFile Detection Test</h1>
+        <p>Teste a detecção de cliques em FlowFiles e componentes NiFi:</p>
+        
+        <!-- Canvas Simulation -->
+        <div class="nifi-canvas" id="canvas">
+            <div class="processor processor1" data-component-type="processor" data-component-id="proc1">
+                GenerateFlowFile
+                <div class="queue-count">3</div>
+            </div>
+            
+            <div class="processor processor2" data-component-type="processor" data-component-id="proc2">
+                LogAttribute
+                <div class="queue-count">5</div>
+            </div>
+            
+            <div class="processor processor3" data-component-type="processor" data-component-id="proc3">
+                PutFile
+                <div class="queue-count">1</div>
+            </div>
+            
+            <div class="connection connection1">
+                <span style="background: white; padding: 2px 4px; font-size: 10px;">queue: 3</span>
+            </div>
+            <div class="connection connection2">
+                <span style="background: white; padding: 2px 4px; font-size: 10px;">queue: 5</span>
+            </div>
+        </div>
+        
+        <!-- FlowFile Queue Listing Simulation -->
+        <div class="queue-listing">
+            <h3>📋 FlowFile Queue Listing - Connection 1</h3>
+            <table class="flowfile-listing-table">
+                <thead>
+                    <tr>
+                        <th>Position</th>
+                        <th>UUID</th>
+                        <th>Filename</th>
+                        <th>File Size</th>
+                        <th>Queue Duration</th>
+                        <th>Lineage Duration</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="flowfile-row" data-flowfile-uuid="12345678-1234-1234-1234-123456789abc">
+                        <td>1</td>
+                        <td>12345678-1234-1234-1234-123456789abc</td>
+                        <td><span class="flowfile-icon"></span>data.json</td>
+                        <td>1.2 MB</td>
+                        <td>2 minutes</td>
+                        <td>5 minutes</td>
+                    </tr>
+                    <tr class="flowfile-row" data-flowfile-uuid="87654321-4321-4321-4321-cba987654321">
+                        <td>2</td>
+                        <td>87654321-4321-4321-4321-cba987654321</td>
+                        <td><span class="flowfile-icon"></span>users.xml</td>
+                        <td>856 KB</td>
+                        <td>30 seconds</td>
+                        <td>3 minutes</td>
+                    </tr>
+                    <tr class="flowfile-row" data-flowfile-uuid="abcdef12-3456-7890-abcd-ef1234567890">
+                        <td>3</td>
+                        <td>abcdef12-3456-7890-abcd-ef1234567890</td>
+                        <td><span class="flowfile-icon"></span>report.csv</td>
+                        <td>2.5 MB</td>
+                        <td>1 minute</td>
+                        <td>8 minutes</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Another Queue Listing -->
+        <div class="queue-listing">
+            <h3>📋 FlowFile Queue Listing - Connection 2</h3>
+            <table class="flowfile-listing-table">
+                <thead>
+                    <tr>
+                        <th>Position</th>
+                        <th>UUID</th>
+                        <th>Filename</th>
+                        <th>File Size</th>
+                        <th>Queue Duration</th>
+                        <th>Lineage Duration</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="flowfile-row" data-flowfile-uuid="11111111-2222-3333-4444-555555555555">
+                        <td>1</td>
+                        <td>11111111-2222-3333-4444-555555555555</td>
+                        <td><span class="flowfile-icon"></span>log_2025-11-01.txt</td>
+                        <td>512 KB</td>
+                        <td>15 seconds</td>
+                        <td>2 minutes</td>
+                    </tr>
+                    <tr class="flowfile-row" data-flowfile-uuid="99999999-8888-7777-6666-555555555555">
+                        <td>2</td>
+                        <td>99999999-8888-7777-6666-555555555555</td>
+                        <td><span class="flowfile-icon"></span>config.properties</td>
+                        <td>4 KB</td>
+                        <td>5 seconds</td>
+                        <td>1 minute</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="info-panel">
+            <h3>🔍 Teste de Detecção</h3>
+            <ul>
+                <li><strong>Processadores:</strong> Clique para testar detecção de componentes</li>
+                <li><strong>FlowFiles:</strong> Clique nas linhas da tabela para testar detecção de FlowFiles</li>
+                <li><strong>Conexões:</strong> Clique nas áreas de conexão</li>
+            </ul>
+            <p><strong>Status:</strong> <span id="status">Aguardando extensão...</span></p>
+            
+            <div class="test-log" id="test-log">
+                <div class="log-entry info">Sistema de teste iniciado...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simular dados de FlowFiles para teste
+        window.nifiData = {
+            processors: {
+                'proc1': {
+                    id: 'proc1',
+                    name: 'GenerateFlowFile',
+                    type: 'org.apache.nifi.processors.standard.GenerateFlowFile',
+                    state: 'RUNNING',
+                    bulletins: [],
+                    inputCount: 0,
+                    outputCount: 1,
+                    flowFilesQueued: 3,
+                    bytesQueued: 0
+                },
+                'proc2': {
+                    id: 'proc2',
+                    name: 'LogAttribute',
+                    type: 'org.apache.nifi.processors.standard.LogAttribute',
+                    state: 'RUNNING',
+                    bulletins: [],
+                    inputCount: 1,
+                    outputCount: 1,
+                    flowFilesQueued: 5,
+                    bytesQueued: 0
+                },
+                'proc3': {
+                    id: 'proc3',
+                    name: 'PutFile',
+                    type: 'org.apache.nifi.processors.standard.PutFile',
+                    state: 'STOPPED',
+                    bulletins: [],
+                    inputCount: 1,
+                    outputCount: 0,
+                    flowFilesQueued: 1,
+                    bytesQueued: 0
+                }
+            },
+            flowFiles: {
+                '12345678-1234-1234-1234-123456789abc': {
+                    uuid: '12345678-1234-1234-1234-123456789abc',
+                    filename: 'data.json',
+                    fileSize: '1.2 MB',
+                    queueDuration: '2 minutes',
+                    lineageDuration: '5 minutes',
+                    connectionId: 'connection1',
+                    attributes: {
+                        'filename': 'data.json',
+                        'path': '/input',
+                        'mime.type': 'application/json'
+                    }
+                },
+                '87654321-4321-4321-4321-cba987654321': {
+                    uuid: '87654321-4321-4321-4321-cba987654321',
+                    filename: 'users.xml',
+                    fileSize: '856 KB',
+                    queueDuration: '30 seconds',
+                    lineageDuration: '3 minutes',
+                    connectionId: 'connection1',
+                    attributes: {
+                        'filename': 'users.xml',
+                        'path': '/users',
+                        'mime.type': 'application/xml'
+                    }
+                },
+                'abcdef12-3456-7890-abcd-ef1234567890': {
+                    uuid: 'abcdef12-3456-7890-abcd-ef1234567890',
+                    filename: 'report.csv',
+                    fileSize: '2.5 MB',
+                    queueDuration: '1 minute',
+                    lineageDuration: '8 minutes',
+                    connectionId: 'connection1',
+                    attributes: {
+                        'filename': 'report.csv',
+                        'path': '/reports',
+                        'mime.type': 'text/csv'
+                    }
+                },
+                '11111111-2222-3333-4444-555555555555': {
+                    uuid: '11111111-2222-3333-4444-555555555555',
+                    filename: 'log_2025-11-01.txt',
+                    fileSize: '512 KB',
+                    queueDuration: '15 seconds',
+                    lineageDuration: '2 minutes',
+                    connectionId: 'connection2',
+                    attributes: {
+                        'filename': 'log_2025-11-01.txt',
+                        'path': '/logs',
+                        'mime.type': 'text/plain'
+                    }
+                },
+                '99999999-8888-7777-6666-555555555555': {
+                    uuid: '99999999-8888-7777-6666-555555555555',
+                    filename: 'config.properties',
+                    fileSize: '4 KB',
+                    queueDuration: '5 seconds',
+                    lineageDuration: '1 minute',
+                    connectionId: 'connection2',
+                    attributes: {
+                        'filename': 'config.properties',
+                        'path': '/config',
+                        'mime.type': 'text/plain'
+                    }
+                }
+            }
+        };
+
+        // Logging system
+        function logMessage(message, type = 'info') {
+            const logContainer = document.getElementById('test-log');
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${timestamp}] ${message}`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        // Verificar se a extensão carregou
+        setTimeout(() => {
+            const statusEl = document.getElementById('status');
+            if (window.canvasDetector) {
+                statusEl.textContent = 'Extensão carregada ✅';
+                statusEl.style.color = 'green';
+                logMessage('Extension detected and loaded', 'success');
+            } else {
+                statusEl.textContent = 'Extensão não detectada ❌';
+                statusEl.style.color = 'red';
+                logMessage('Extension not detected', 'warning');
+            }
+        }, 2000);
+
+        // Adicionar eventos de clique para processadores
+        document.querySelectorAll('.processor').forEach(processor => {
+            processor.addEventListener('click', (e) => {
+                const componentId = e.target.dataset.componentId;
+                const component = window.nifiData.processors[componentId];
+                
+                logMessage(`Processor clicked: ${component.name} (${componentId})`, 'info');
+                
+                // Remover seleção anterior
+                document.querySelectorAll('.processor').forEach(p => p.classList.remove('selected'));
+                e.target.classList.add('selected');
+                
+                // Simular evento para a extensão
+                const event = new CustomEvent('nifi-component-selected', {
+                    detail: {
+                        componentId: componentId,
+                        componentType: 'processor',
+                        component: component
+                    }
+                });
+                document.dispatchEvent(event);
+            });
+        });
+
+        // Adicionar eventos de clique para FlowFiles
+        document.querySelectorAll('.flowfile-row').forEach(row => {
+            row.addEventListener('click', (e) => {
+                const flowFileUuid = e.currentTarget.dataset.flowfileUuid;
+                const flowFile = window.nifiData.flowFiles[flowFileUuid];
+                
+                if (flowFile) {
+                    logMessage(`FlowFile clicked: ${flowFile.filename} (${flowFileUuid.substring(0, 8)}...)`, 'success');
+                    
+                    // Remover seleção anterior
+                    document.querySelectorAll('.flowfile-row').forEach(r => r.classList.remove('selected'));
+                    e.currentTarget.classList.add('selected');
+                    
+                    // Adicionar flag isFlowFile
+                    flowFile.isFlowFile = true;
+                    flowFile.subType = 'listing';
+                    
+                    // Simular evento para a extensão
+                    const event = new CustomEvent('nifi-flowfile-selected', {
+                        detail: {
+                            flowFileUuid: flowFileUuid,
+                            flowFileType: 'flowfile',
+                            flowFile: flowFile
+                        }
+                    });
+                    document.dispatchEvent(event);
+                } else {
+                    logMessage(`FlowFile data not found for UUID: ${flowFileUuid}`, 'error');
+                }
+            });
+
+            // Hover effects
+            row.addEventListener('mouseenter', () => {
+                const flowFileUuid = row.dataset.flowfileUuid;
+                const flowFile = window.nifiData.flowFiles[flowFileUuid];
+                if (flowFile) {
+                    logMessage(`FlowFile hovered: ${flowFile.filename}`, 'info');
+                }
+            });
+        });
+
+        // Global click listener for canvas
+        document.getElementById('canvas').addEventListener('click', (e) => {
+            if (e.target.id === 'canvas') {
+                logMessage('Canvas clicked - clearing selections', 'info');
+                document.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+            }
+        });
+
+        logMessage('Test page initialized successfully', 'success');
+    </script>
+    
+    <style>
+        .processor.selected {
+            background: #d1e7ff !important;
+            border-color: #1a5490 !important;
+            box-shadow: 0 0 10px rgba(45, 79, 145, 0.3);
+        }
+        
+        .flowfile-row.selected {
+            background-color: rgba(45, 79, 145, 0.1) !important;
+        }
+    </style>
+</body>
+</html>

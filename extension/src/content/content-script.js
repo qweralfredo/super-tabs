@@ -254,19 +254,34 @@ class SuperTabsContentScript {
 
     if (type === 'component' && componentInfo) {
       this.handleComponentClick(componentInfo, event);
+    } else if (type === 'flowfile' && componentInfo) {
+      this.handleFlowFileClick(componentInfo, event);
     } else if (type === 'canvas') {
       this.handleCanvasClick(event);
     }
   }
 
   async handleComponentClick(componentInfo, event) {
-    if (this.settings.autoOpen && this.sidebar) {
-      await this.sidebar.showForComponent(componentInfo);
+    if (this.settings.autoShowSidebar && this.sidebar) {
+      await this.sidebar.show(componentInfo);
     }
 
     // Highlight clicked component
     if (canvasDetector) {
       canvasDetector.highlightComponent(componentInfo.id);
+    }
+  }
+
+  async handleFlowFileClick(flowFileInfo, event) {
+    SuperTabsLogger.debug('Handling FlowFile click', flowFileInfo);
+    
+    if (this.settings.autoShowSidebar && this.sidebar) {
+      await this.sidebar.show(flowFileInfo);
+    }
+
+    // Highlight clicked FlowFile
+    if (canvasDetector) {
+      canvasDetector.highlightFlowFile(flowFileInfo.uuid);
     }
   }
 
@@ -277,7 +292,7 @@ class SuperTabsContentScript {
     }
 
     // Hide sidebar if showing
-    if (this.sidebar?.isVisible()) {
+    if (this.sidebar?.isOpen()) {
       await this.sidebar.hide();
     }
   }
@@ -294,7 +309,7 @@ class SuperTabsContentScript {
   async toggleSidebar() {
     if (!this.sidebar) return false;
     
-    if (this.sidebar.isVisible()) {
+    if (this.sidebar.isOpen()) {
       await this.sidebar.hide();
       return false;
     } else {
