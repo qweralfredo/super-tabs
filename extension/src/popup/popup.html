@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SuperTabs - NiFi Assistant</title>
     <link rel="stylesheet" href="../content/nifi-theme.css">
+    <link rel="stylesheet" href="../content/nifi-icons.css">
     <style>
         body {
             width: 350px;
@@ -119,9 +120,13 @@
         }
 
         .action-btn .icon {
-            font-size: 24px;
+            font-size: 20px;
             margin-bottom: var(--nifi-spacing-xs);
             color: var(--nifi-primary-blue);
+        }
+
+        .action-btn .icon i {
+            font-size: 20px;
         }
 
         .action-btn .label {
@@ -220,19 +225,19 @@
             <h3>Ações Rápidas</h3>
             <div class="action-grid">
                 <div class="action-btn" id="toggle-sidebar">
-                    <div class="icon">📋</div>
+                    <div class="icon"><i class="fa fa-bars" aria-hidden="true"></i></div>
                     <div class="label">Toggle Sidebar</div>
                 </div>
                 <div class="action-btn" id="open-expression-generator">
-                    <div class="icon">🔧</div>
+                    <div class="icon"><i class="fa fa-code" aria-hidden="true"></i></div>
                     <div class="label">Expression Generator</div>
                 </div>
                 <div class="action-btn" id="align-components">
-                    <div class="icon">⚡</div>
+                    <div class="icon"><i class="fa fa-align-left" aria-hidden="true"></i></div>
                     <div class="label">Auto Align</div>
                 </div>
                 <div class="action-btn" id="open-settings">
-                    <div class="icon">⚙️</div>
+                    <div class="icon"><i class="fa fa-cog" aria-hidden="true"></i></div>
                     <div class="label">Configurações</div>
                 </div>
             </div>

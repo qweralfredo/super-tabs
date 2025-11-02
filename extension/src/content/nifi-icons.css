@@ -1,0 +1,394 @@
+/* SuperTabs - NiFi Icons System */
+/* Font Awesome icons mapping based on Apache NiFi Flow Design System */
+
+/* Import Font Awesome */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+
+:root {
+  /* NiFi Icon System - Font Awesome Classes */
+  --nifi-icon-user: 'fa fa-user';
+  --nifi-icon-key: 'fa fa-key';
+  --nifi-icon-close: 'fa fa-close';
+  --nifi-icon-times: 'fa fa-times';
+  --nifi-icon-caret-down: 'fa fa-caret-down';
+  --nifi-icon-caret-up: 'fa fa-caret-up';
+  --nifi-icon-caret-left: 'fa fa-caret-left';
+  --nifi-icon-caret-right: 'fa fa-caret-right';
+  --nifi-icon-ellipsis-v: 'fa fa-ellipsis-v';
+  --nifi-icon-ellipsis-h: 'fa fa-ellipsis-h';
+  --nifi-icon-check: 'fa fa-check';
+  --nifi-icon-check-circle: 'fa fa-check-circle';
+  --nifi-icon-check-circle-o: 'fa fa-check-circle-o';
+  --nifi-icon-exclamation-triangle: 'fa fa-exclamation-triangle';
+  --nifi-icon-info-circle: 'fa fa-info-circle';
+  --nifi-icon-question-circle: 'fa fa-question-circle';
+  --nifi-icon-question: 'fa fa-question';
+  --nifi-icon-plus: 'fa fa-plus';
+  --nifi-icon-minus: 'fa fa-minus';
+  --nifi-icon-edit: 'fa fa-edit';
+  --nifi-icon-trash: 'fa fa-trash';
+  --nifi-icon-delete: 'fa fa-delete';
+  --nifi-icon-copy: 'fa fa-copy';
+  --nifi-icon-clone: 'fa fa-clone';
+  --nifi-icon-settings: 'fa fa-cog';
+  --nifi-icon-gear: 'fa fa-gear';
+  --nifi-icon-wrench: 'fa fa-wrench';
+  --nifi-icon-tools: 'fa fa-tools';
+  --nifi-icon-search: 'fa fa-search';
+  --nifi-icon-filter: 'fa fa-filter';
+  --nifi-icon-sort: 'fa fa-sort';
+  --nifi-icon-sort-asc: 'fa fa-sort-asc';
+  --nifi-icon-sort-desc: 'fa fa-sort-desc';
+  --nifi-icon-refresh: 'fa fa-refresh';
+  --nifi-icon-sync: 'fa fa-sync';
+  --nifi-icon-download: 'fa fa-download';
+  --nifi-icon-upload: 'fa fa-upload';
+  --nifi-icon-file: 'fa fa-file';
+  --nifi-icon-file-o: 'fa fa-file-o';
+  --nifi-icon-folder: 'fa fa-folder';
+  --nifi-icon-folder-open: 'fa fa-folder-open';
+  --nifi-icon-save: 'fa fa-save';
+  --nifi-icon-floppy-o: 'fa fa-floppy-o';
+  --nifi-icon-play: 'fa fa-play';
+  --nifi-icon-pause: 'fa fa-pause';
+  --nifi-icon-stop: 'fa fa-stop';
+  --nifi-icon-step-forward: 'fa fa-step-forward';
+  --nifi-icon-step-backward: 'fa fa-step-backward';
+  --nifi-icon-forward: 'fa fa-forward';
+  --nifi-icon-backward: 'fa fa-backward';
+  --nifi-icon-home: 'fa fa-home';
+  --nifi-icon-arrow-left: 'fa fa-arrow-left';
+  --nifi-icon-arrow-right: 'fa fa-arrow-right';
+  --nifi-icon-arrow-up: 'fa fa-arrow-up';
+  --nifi-icon-arrow-down: 'fa fa-arrow-down';
+  --nifi-icon-chevron-left: 'fa fa-chevron-left';
+  --nifi-icon-chevron-right: 'fa fa-chevron-right';
+  --nifi-icon-chevron-up: 'fa fa-chevron-up';
+  --nifi-icon-chevron-down: 'fa fa-chevron-down';
+  --nifi-icon-eye: 'fa fa-eye';
+  --nifi-icon-eye-slash: 'fa fa-eye-slash';
+  --nifi-icon-lock: 'fa fa-lock';
+  --nifi-icon-unlock: 'fa fa-unlock';
+  --nifi-icon-shield: 'fa fa-shield';
+  --nifi-icon-warning: 'fa fa-warning';
+  --nifi-icon-bell: 'fa fa-bell';
+  --nifi-icon-bell-slash: 'fa fa-bell-slash';
+  --nifi-icon-calendar: 'fa fa-calendar';
+  --nifi-icon-clock-o: 'fa fa-clock-o';
+  --nifi-icon-history: 'fa fa-history';
+  --nifi-icon-chart-line: 'fa fa-chart-line';
+  --nifi-icon-chart-bar: 'fa fa-chart-bar';
+  --nifi-icon-chart-pie: 'fa fa-chart-pie';
+  --nifi-icon-table: 'fa fa-table';
+  --nifi-icon-list: 'fa fa-list';
+  --nifi-icon-list-ul: 'fa fa-list-ul';
+  --nifi-icon-list-ol: 'fa fa-list-ol';
+  --nifi-icon-th: 'fa fa-th';
+  --nifi-icon-th-list: 'fa fa-th-list';
+  --nifi-icon-grid: 'fa fa-th';
+  --nifi-icon-bars: 'fa fa-bars';
+  --nifi-icon-menu: 'fa fa-bars';
+  --nifi-icon-hamburger: 'fa fa-bars';
+  --nifi-icon-external-link: 'fa fa-external-link';
+  --nifi-icon-link: 'fa fa-link';
+  --nifi-icon-unlink: 'fa fa-unlink';
+  --nifi-icon-paperclip: 'fa fa-paperclip';
+  --nifi-icon-tag: 'fa fa-tag';
+  --nifi-icon-tags: 'fa fa-tags';
+  --nifi-icon-bookmark: 'fa fa-bookmark';
+  --nifi-icon-bookmark-o: 'fa fa-bookmark-o';
+  --nifi-icon-star: 'fa fa-star';
+  --nifi-icon-star-o: 'fa fa-star-o';
+  --nifi-icon-heart: 'fa fa-heart';
+  --nifi-icon-heart-o: 'fa fa-heart-o';
+  --nifi-icon-thumbs-up: 'fa fa-thumbs-up';
+  --nifi-icon-thumbs-down: 'fa fa-thumbs-down';
+  --nifi-icon-comment: 'fa fa-comment';
+  --nifi-icon-comment-o: 'fa fa-comment-o';
+  --nifi-icon-comments: 'fa fa-comments';
+  --nifi-icon-comments-o: 'fa fa-comments-o';
+  --nifi-icon-envelope: 'fa fa-envelope';
+  --nifi-icon-envelope-o: 'fa fa-envelope-o';
+  --nifi-icon-phone: 'fa fa-phone';
+  --nifi-icon-mobile: 'fa fa-mobile';
+  --nifi-icon-globe: 'fa fa-globe';
+  --nifi-icon-map: 'fa fa-map';
+  --nifi-icon-map-marker: 'fa fa-map-marker';
+  --nifi-icon-location-arrow: 'fa fa-location-arrow';
+  --nifi-icon-crosshairs: 'fa fa-crosshairs';
+  --nifi-icon-bullseye: 'fa fa-bullseye';
+  
+  /* NiFi Status Icons */
+  --nifi-icon-status-running: 'fa fa-play-circle';
+  --nifi-icon-status-stopped: 'fa fa-stop-circle';
+  --nifi-icon-status-disabled: 'fa fa-ban';
+  --nifi-icon-status-invalid: 'fa fa-exclamation-triangle';
+  --nifi-icon-status-warning: 'fa fa-warning';
+  --nifi-icon-status-error: 'fa fa-times-circle';
+  --nifi-icon-status-success: 'fa fa-check-circle';
+  --nifi-icon-status-info: 'fa fa-info-circle';
+  
+  /* NiFi Component Icons */
+  --nifi-icon-processor: 'fa fa-cogs';
+  --nifi-icon-connection: 'fa fa-long-arrow-right';
+  --nifi-icon-funnel: 'fa fa-filter';
+  --nifi-icon-port: 'fa fa-sign-in';
+  --nifi-icon-process-group: 'fa fa-object-group';
+  --nifi-icon-label: 'fa fa-tag';
+  --nifi-icon-flowfile: 'fa fa-file-o';
+  
+  /* NiFi Action Icons */
+  --nifi-icon-start: 'fa fa-play';
+  --nifi-icon-stop: 'fa fa-stop';
+  --nifi-icon-restart: 'fa fa-refresh';
+  --nifi-icon-configure: 'fa fa-gear';
+  --nifi-icon-remove: 'fa fa-trash';
+  --nifi-icon-copy: 'fa fa-copy';
+  --nifi-icon-move: 'fa fa-arrows';
+  --nifi-icon-align: 'fa fa-align-left';
+  --nifi-icon-group: 'fa fa-object-group';
+  --nifi-icon-ungroup: 'fa fa-object-ungroup';
+  
+  /* NiFi Navigation Icons */
+  --nifi-icon-zoom-in: 'fa fa-search-plus';
+  --nifi-icon-zoom-out: 'fa fa-search-minus';
+  --nifi-icon-zoom-fit: 'fa fa-expand';
+  --nifi-icon-zoom-actual: 'fa fa-compress';
+  --nifi-icon-fullscreen: 'fa fa-expand-arrows-alt';
+  --nifi-icon-exit-fullscreen: 'fa fa-compress-arrows-alt';
+}
+
+/* Font Awesome Icon Base Styles - NiFi Compatible */
+.supertabs-icon {
+  font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free', 'FontAwesome';
+  font-weight: 900;
+  font-style: normal;
+  font-variant: normal;
+  text-rendering: auto;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* NiFi Icon Sizes */
+.supertabs-icon.xs {
+  font-size: 10px;
+}
+
+.supertabs-icon.sm {
+  font-size: 12px;
+}
+
+.supertabs-icon.md {
+  font-size: 14px;
+}
+
+.supertabs-icon.lg {
+  font-size: 16px;
+}
+
+.supertabs-icon.xl {
+  font-size: 18px;
+}
+
+.supertabs-icon.xxl {
+  font-size: 20px;
+}
+
+/* NiFi Icon Colors */
+.supertabs-icon.primary {
+  color: var(--nifi-primary-blue);
+}
+
+.supertabs-icon.secondary {
+  color: var(--nifi-secondary-blue);
+}
+
+.supertabs-icon.accent {
+  color: var(--nifi-accent-blue);
+}
+
+.supertabs-icon.success {
+  color: var(--nifi-success-green);
+}
+
+.supertabs-icon.warning {
+  color: var(--nifi-warning-orange);
+}
+
+.supertabs-icon.error {
+  color: var(--nifi-error-red);
+}
+
+.supertabs-icon.info {
+  color: var(--nifi-info-blue);
+}
+
+.supertabs-icon.muted {
+  color: var(--nifi-gray-medium);
+}
+
+.supertabs-icon.disabled {
+  color: var(--nifi-gray-light);
+  opacity: 0.5;
+}
+
+/* Interactive Icon States */
+.supertabs-icon.interactive {
+  cursor: pointer;
+  transition: var(--nifi-transition);
+}
+
+.supertabs-icon.interactive:hover {
+  transform: scale(1.1);
+  opacity: 0.8;
+}
+
+.supertabs-icon.interactive:active {
+  transform: scale(0.95);
+}
+
+/* Icon Button Styles - NiFi Compatible */
+.supertabs-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: none;
+  border-radius: var(--nifi-border-radius);
+  cursor: pointer;
+  transition: var(--nifi-transition);
+  color: var(--nifi-gray-medium);
+}
+
+.supertabs-icon-button:hover {
+  background-color: var(--nifi-gray-lighter);
+  color: var(--nifi-primary-blue);
+}
+
+.supertabs-icon-button:active {
+  background-color: var(--nifi-gray-light);
+  transform: scale(0.95);
+}
+
+.supertabs-icon-button.primary {
+  color: var(--nifi-primary-blue);
+}
+
+.supertabs-icon-button.primary:hover {
+  background-color: var(--nifi-light-blue);
+}
+
+.supertabs-icon-button.small {
+  width: 24px;
+  height: 24px;
+}
+
+.supertabs-icon-button.large {
+  width: 40px;
+  height: 40px;
+}
+
+.supertabs-icon-button:disabled {
+  color: var(--nifi-gray-light);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.supertabs-icon-button:disabled:hover {
+  background-color: transparent;
+  transform: none;
+}
+
+/* Icon with Text Combinations */
+.supertabs-icon-text {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--nifi-spacing-sm);
+}
+
+.supertabs-icon-text.vertical {
+  flex-direction: column;
+  gap: var(--nifi-spacing-xs);
+}
+
+/* Status Icon Indicators */
+.supertabs-status-icon {
+  position: relative;
+  display: inline-block;
+}
+
+.supertabs-status-icon::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid white;
+}
+
+.supertabs-status-icon.running::after {
+  background-color: var(--nifi-success-green);
+}
+
+.supertabs-status-icon.stopped::after {
+  background-color: var(--nifi-error-red);
+}
+
+.supertabs-status-icon.warning::after {
+  background-color: var(--nifi-warning-orange);
+}
+
+.supertabs-status-icon.disabled::after {
+  background-color: var(--nifi-gray-medium);
+}
+
+/* Utility Classes for Common NiFi Icon Patterns */
+.supertabs-menu-icon {
+  opacity: 0.7;
+  transition: var(--nifi-transition);
+}
+
+.supertabs-menu-icon:hover {
+  opacity: 1;
+}
+
+.supertabs-action-icon {
+  margin-right: var(--nifi-spacing-xs);
+}
+
+.supertabs-trailing-icon {
+  margin-left: var(--nifi-spacing-xs);
+}
+
+.supertabs-icon-spin {
+  animation: supertabs-spin 1s linear infinite;
+}
+
+@keyframes supertabs-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Accessibility */
+.supertabs-icon[aria-hidden="true"] {
+  /* Hidden from screen readers */
+  visibility: hidden;
+}
+
+.supertabs-icon-button:focus {
+  outline: 2px solid var(--nifi-primary-blue);
+  outline-offset: 2px;
+}
+
+/* Print Styles */
+@media print {
+  .supertabs-icon {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

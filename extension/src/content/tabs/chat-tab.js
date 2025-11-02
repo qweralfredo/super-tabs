@@ -33,14 +33,14 @@ class SuperTabsChatTab {
         <div class="supertabs-chat-mode">
           <div class="supertabs-mode-tabs">
             <button class="supertabs-mode-btn active" data-mode="ai" id="ai-mode-btn">
-              🤖 AI Assistant
+              <i class="fa fa-robot" aria-hidden="true"></i> AI Assistant
             </button>
             <button class="supertabs-mode-btn" data-mode="instructor" id="instructor-mode-btn">
-              👨‍🏫 Instructor
+              <i class="fa fa-user-graduate" aria-hidden="true"></i> Instructor
             </button>
           </div>
           <div class="supertabs-mode-status" id="mode-status">
-            <span class="supertabs-status-indicator ai">🟢</span>
+            <span class="supertabs-status-indicator ai"><i class="fa fa-circle" aria-hidden="true" style="color: #5cb85c;"></i></span>
             <span>AI Assistant Mode</span>
           </div>
         </div>
@@ -48,7 +48,7 @@ class SuperTabsChatTab {
         <!-- Component Context -->
         <div class="supertabs-chat-context" id="chat-context">
           <div class="supertabs-context-empty">
-            <span>💭</span>
+            <i class="fa fa-lightbulb-o" aria-hidden="true"></i>
             <span>No component context available</span>
           </div>
         </div>
@@ -56,7 +56,7 @@ class SuperTabsChatTab {
         <!-- Chat Messages -->
         <div class="supertabs-chat-messages" id="chat-messages">
           <div class="supertabs-chat-welcome">
-            <div class="supertabs-welcome-icon">🤖</div>
+            <div class="supertabs-welcome-icon"><i class="fa fa-robot" aria-hidden="true"></i></div>
             <div class="supertabs-welcome-message">
               <h4>Hello! I'm your NiFi AI Assistant</h4>
               <p>I can help you with component analysis, configuration questions, and troubleshooting. Select a component to get started!</p>
@@ -76,7 +76,7 @@ class SuperTabsChatTab {
             ></textarea>
             <button class="supertabs-chat-send" id="send-btn" disabled>
               <span>Send</span>
-              <span>📤</span>
+              <i class="fa fa-paper-plane" aria-hidden="true"></i>
             </button>
           </div>
           <div class="supertabs-chat-suggestions" id="chat-suggestions" style="display: none;">
@@ -87,16 +87,16 @@ class SuperTabsChatTab {
         <!-- Quick Actions -->
         <div class="supertabs-chat-actions" id="chat-actions" style="display: none;">
           <button class="supertabs-action-chip" data-action="explain">
-            💡 Explain this component
+            <i class="fa fa-lightbulb-o" aria-hidden="true"></i> Explain this component
           </button>
           <button class="supertabs-action-chip" data-action="troubleshoot">
-            🔧 Troubleshoot issues
+            <i class="fa fa-wrench" aria-hidden="true"></i> Troubleshoot issues
           </button>
           <button class="supertabs-action-chip" data-action="optimize">
-            ⚡ Optimization tips
+            <i class="fa fa-bolt" aria-hidden="true"></i> Optimization tips
           </button>
           <button class="supertabs-action-chip" data-action="examples">
-            📝 Usage examples
+            <i class="fa fa-file-text-o" aria-hidden="true"></i> Usage examples
           </button>
         </div>
       </div>

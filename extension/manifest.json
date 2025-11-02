@@ -44,6 +44,8 @@
         "src/content/content-script.js"
       ],
       "css": [
+        "src/content/nifi-theme.css",
+        "src/content/nifi-icons.css",
         "src/content/supertabs.css",
         "src/content/sidebar.css",
         "src/content/tabs.css",

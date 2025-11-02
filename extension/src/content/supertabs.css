@@ -26,13 +26,21 @@
   --nifi-surface: #F8F9FA;
   --nifi-border: #E1E5E9;
   
-  /* NiFi Typography */
+  /* NiFi Typography - Flow Design System Aligned */
   --nifi-font-family: 'Roboto', 'Arial', sans-serif;
-  --nifi-font-size-xs: 11px;
+  --nifi-font-family-secondary: 'Roboto Slab', sans-serif;
+  --nifi-font-family-medium: 'Roboto Medium', sans-serif;
+  --nifi-font-family-light: 'Roboto Light', sans-serif;
+  
+  --nifi-font-size-xs: 10px;
   --nifi-font-size-small: 12px;
-  --nifi-font-size-base: 14px;
+  --nifi-font-size-base: 13px;
+  --nifi-font-size-base-alt: 14px;
   --nifi-font-size-lg: 16px;
   --nifi-font-size-header: 18px;
+  --nifi-font-size-large: 20px;
+  
+  --nifi-font-weight-light: 300;
   --nifi-font-weight-normal: 400;
   --nifi-font-weight-medium: 500;
   --nifi-font-weight-bold: 600;
