@@ -25,8 +25,11 @@ class SuperTabsStatsTab {
       // Get NiFi API instance
       this.nifiApi = window.superTabsNifiApi;
       
-      // Show initial empty state
-      this.showEmptyState();
+      // Load general NiFi stats instead of empty state
+      await this.loadGeneralStats();
+      
+      // Start auto-refresh for general stats
+      this.startAutoRefresh();
       
       SuperTabsLogger.info('StatsTab', 'Stats tab initialized');
     } catch (error) {
@@ -66,7 +69,245 @@ class SuperTabsStatsTab {
   async refresh() {
     if (this.component && !this.isLoading) {
       await this.loadComponentStats();
+    } else if (!this.component && !this.isLoading) {
+      await this.loadGeneralStats();
     }
+  }
+
+  async loadGeneralStats() {
+    try {
+      this.isLoading = true;
+      this.showLoading();
+
+      SuperTabsLogger.debug('StatsTab', 'Loading general NiFi statistics');
+
+      // Get authentication token
+      const nifiUrl = 'https://localhost:8443/nifi-api';
+      const username = 'admin';
+      const password = 'ctsBtRBKHRAx69EqUghvvgEvjnaLjFEB';
+
+      // Authenticate
+      const authResponse = await fetch(`${nifiUrl}/access/token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
+      });
+
+      if (!authResponse.ok) {
+        throw new Error('Authentication failed');
+      }
+
+      const token = await authResponse.text();
+      const authHeaders = {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json'
+      };
+
+      // Get flow status
+      const statusResponse = await fetch(`${nifiUrl}/flow/status`, { headers: authHeaders });
+      const statusData = await statusResponse.json();
+
+      // Get about info
+      const aboutResponse = await fetch(`${nifiUrl}/flow/about`, { headers: authHeaders });
+      const aboutData = await aboutResponse.json();
+
+      // Get process group stats
+      const pgResponse = await fetch(`${nifiUrl}/flow/process-groups/root`, { headers: authHeaders });
+      const pgData = await pgResponse.json();
+
+      const generalStats = {
+        system: {
+          version: aboutData.about?.version || 'Unknown',
+          title: aboutData.about?.title || 'Apache NiFi',
+          buildTag: aboutData.about?.buildTag || 'Unknown',
+          buildRevision: aboutData.about?.buildRevision?.substring(0, 8) || 'Unknown'
+        },
+        controller: {
+          activeThreads: statusData.controllerStatus?.activeThreadCount || 0,
+          queued: statusData.controllerStatus?.queued || '0 / 0 B',
+          connectedNodes: statusData.controllerStatus?.connectedNodeCount || 0,
+          runningComponents: statusData.controllerStatus?.runningCount || 0,
+          stoppedComponents: statusData.controllerStatus?.stoppedCount || 0,
+          invalidComponents: statusData.controllerStatus?.invalidCount || 0,
+          disabledComponents: statusData.controllerStatus?.disabledCount || 0
+        },
+        processGroup: {
+          id: pgData.processGroupFlow?.id || 'root',
+          name: pgData.processGroupFlow?.breadcrumb?.breadcrumb?.name || 'NiFi Flow',
+          running: pgData.processGroupFlow?.runningCount || 0,
+          stopped: pgData.processGroupFlow?.stoppedCount || 0,
+          invalid: pgData.processGroupFlow?.invalidCount || 0,
+          disabled: pgData.processGroupFlow?.disabledCount || 0
+        },
+        timestamp: Date.now()
+      };
+
+      this.stats.current = generalStats;
+      this.stats.history.push(generalStats);
+
+      // Keep only last 50 entries
+      if (this.stats.history.length > 50) {
+        this.stats.history = this.stats.history.slice(-50);
+      }
+
+      this.renderGeneralStats(generalStats);
+
+      SuperTabsLogger.info('StatsTab', 'General statistics loaded successfully');
+
+    } catch (error) {
+      SuperTabsLogger.error('StatsTab', 'Failed to load general stats', error);
+      this.showError(`Failed to load NiFi statistics: ${error.message}`);
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  renderGeneralStats(stats) {
+    const queuedParts = stats.controller.queued.split('/');
+    const queuedCount = queuedParts[0]?.trim() || '0';
+    const queuedSize = queuedParts[1]?.trim() || '0 B';
+
+    const html = `
+      <div class="supertabs-stats-content">
+        <!-- System Information -->
+        <div class="supertabs-content-section">
+          <h4 class="supertabs-section-title">
+            <span class="supertabs-section-icon">🖥️</span>
+            System Information
+          </h4>
+          <div class="supertabs-info-grid">
+            <div class="supertabs-info-item">
+              <label class="supertabs-info-label">NiFi Version:</label>
+              <span class="supertabs-info-value">${stats.system.version}</span>
+            </div>
+            <div class="supertabs-info-item">
+              <label class="supertabs-info-label">Title:</label>
+              <span class="supertabs-info-value">${stats.system.title}</span>
+            </div>
+            <div class="supertabs-info-item">
+              <label class="supertabs-info-label">Build:</label>
+              <span class="supertabs-info-value">${stats.system.buildTag}</span>
+            </div>
+            <div class="supertabs-info-item">
+              <label class="supertabs-info-label">Revision:</label>
+              <span class="supertabs-info-value">${stats.system.buildRevision}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Controller Status -->
+        <div class="supertabs-content-section">
+          <h4 class="supertabs-section-title">
+            <span class="supertabs-section-icon">⚡</span>
+            Controller Status
+          </h4>
+          <div class="supertabs-stats-summary">
+            <div class="supertabs-stat-card">
+              <div class="supertabs-stat-value">${stats.controller.activeThreads}</div>
+              <div class="supertabs-stat-label">Active Threads</div>
+            </div>
+            <div class="supertabs-stat-card">
+              <div class="supertabs-stat-value">${queuedCount}</div>
+              <div class="supertabs-stat-label">Queued FlowFiles</div>
+            </div>
+            <div class="supertabs-stat-card">
+              <div class="supertabs-stat-value">${queuedSize}</div>
+              <div class="supertabs-stat-label">Queued Size</div>
+            </div>
+            <div class="supertabs-stat-card">
+              <div class="supertabs-stat-value">${stats.controller.connectedNodes}</div>
+              <div class="supertabs-stat-label">Connected Nodes</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Component Status -->
+        <div class="supertabs-content-section">
+          <h4 class="supertabs-section-title">
+            <span class="supertabs-section-icon">🔧</span>
+            Component Status
+          </h4>
+          <div class="supertabs-info-grid">
+            <div class="supertabs-info-item">
+              <label class="supertabs-info-label">Running:</label>
+              <span class="supertabs-info-value" style="color: #4caf50;">
+                ▶️ ${stats.controller.runningComponents}
+              </span>
+            </div>
+            <div class="supertabs-info-item">
+              <label class="supertabs-info-label">Stopped:</label>
+              <span class="supertabs-info-value" style="color: #ff9800;">
+                ⏸️ ${stats.controller.stoppedComponents}
+              </span>
+            </div>
+            <div class="supertabs-info-item">
+              <label class="supertabs-info-label">Invalid:</label>
+              <span class="supertabs-info-value" style="color: #f44336;">
+                ⚠️ ${stats.controller.invalidComponents}
+              </span>
+            </div>
+            <div class="supertabs-info-item">
+              <label class="supertabs-info-label">Disabled:</label>
+              <span class="supertabs-info-value" style="color: #9e9e9e;">
+                ⛔ ${stats.controller.disabledComponents}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Process Group Info -->
+        <div class="supertabs-content-section">
+          <h4 class="supertabs-section-title">
+            <span class="supertabs-section-icon">📦</span>
+            Root Process Group
+          </h4>
+          <div class="supertabs-info-grid">
+            <div class="supertabs-info-item">
+              <label class="supertabs-info-label">Name:</label>
+              <span class="supertabs-info-value">${stats.processGroup.name}</span>
+            </div>
+            <div class="supertabs-info-item">
+              <label class="supertabs-info-label">ID:</label>
+              <span class="supertabs-info-value">${stats.processGroup.id}</span>
+            </div>
+            <div class="supertabs-info-item">
+              <label class="supertabs-info-label">Running:</label>
+              <span class="supertabs-info-value" style="color: #4caf50;">${stats.processGroup.running}</span>
+            </div>
+            <div class="supertabs-info-item">
+              <label class="supertabs-info-label">Stopped:</label>
+              <span class="supertabs-info-value" style="color: #ff9800;">${stats.processGroup.stopped}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Last Updated -->
+        <div class="supertabs-content-section">
+          <h4 class="supertabs-section-title">
+            <span class="supertabs-section-icon">🕐</span>
+            Last Updated
+          </h4>
+          <div class="supertabs-info-item">
+            <span class="supertabs-info-value">${this.formatTimestamp(stats.timestamp)}</span>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="supertabs-action-bar">
+          <button class="supertabs-btn supertabs-btn-primary" id="supertabs-refresh-stats">
+            🔄 Refresh Now
+          </button>
+          <button class="supertabs-btn supertabs-btn-secondary" id="supertabs-export-stats">
+            💾 Export Stats
+          </button>
+        </div>
+      </div>
+    `;
+
+    this.container.innerHTML = html;
+    this.bindStatsEvents();
   }
 
   async loadComponentStats() {
@@ -577,8 +818,12 @@ class SuperTabsStatsTab {
   startAutoRefresh() {
     // Refresh every 30 seconds
     this.updateInterval = setInterval(() => {
-      if (this.component && !this.isLoading) {
-        this.loadComponentStats();
+      if (!this.isLoading) {
+        if (this.component) {
+          this.loadComponentStats();
+        } else {
+          this.loadGeneralStats();
+        }
       }
     }, 30000);
   }

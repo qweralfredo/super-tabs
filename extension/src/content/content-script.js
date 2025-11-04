@@ -45,7 +45,13 @@ const initializeUtilities = async () => {
               autoShowSidebar: true,
               enableNotifications: true,
               debugMode: false,
-              sidebarWidth: 400
+              sidebarWidth: 400,
+              // NiFi Connection Settings - Provided credentials
+              nifiBaseUrl: 'https://localhost:8443/nifi',
+              nifiUsername: 'admin',
+              nifiPassword: 'ctsBtRBKHRAx69EqUghvvgEvjnaLjFEB',
+              nifiSecure: true,
+              nifiTimeout: 30000
             });
             return result;
           } catch (error) {

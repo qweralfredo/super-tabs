@@ -56,6 +56,10 @@ class SuperTabsSidebar {
           <p class="supertabs-sidebar-subtitle">Apache NiFi Enhancement</p>
         </div>
         <div class="supertabs-sidebar-controls">
+          <button class="supertabs-sidebar-control-btn supertabs-align-btn" id="supertabs-align-btn" title="Align selected components">
+            <i class="fas fa-align-justify"></i>
+            <span>Alinhar</span>
+          </button>
           <button class="supertabs-sidebar-control-btn" id="supertabs-minimize-btn" title="Minimize">
             <span>-</span>
           </button>
@@ -160,10 +164,12 @@ class SuperTabsSidebar {
     const minimizeBtn = this.element.querySelector('#supertabs-minimize-btn');
     const resizeBtn = this.element.querySelector('#supertabs-resize-btn');
     const closeBtn = this.element.querySelector('#supertabs-close-btn');
+    const alignBtn = this.element.querySelector('#supertabs-align-btn');
 
     minimizeBtn?.addEventListener('click', () => this.minimize());
     resizeBtn?.addEventListener('click', () => this.toggleSize());
     closeBtn?.addEventListener('click', () => this.hide());
+    alignBtn?.addEventListener('click', () => this.openAlignmentTool());
 
     // Tab switching
     const tabButtons = this.element.querySelectorAll('.supertabs-tab-btn');
@@ -448,6 +454,125 @@ class SuperTabsSidebar {
         </div>
       `;
     });
+  }
+
+  async openAlignmentTool() {
+    try {
+      SuperTabsLogger.debug('Sidebar', 'Opening alignment tool');
+
+      // Get selected components from NiFi canvas
+      const selectedComponents = this.getSelectedComponents();
+
+      if (!selectedComponents || selectedComponents.length === 0) {
+        SuperTabsLogger.warn('Sidebar', 'No components selected');
+        
+        // Show notification
+        this.showNotification('Please select at least one component to align', 'warning');
+        return;
+      }
+
+      SuperTabsLogger.info('Sidebar', `Opening alignment tool with ${selectedComponents.length} components`);
+
+      // Initialize alignment tool if not already initialized
+      if (!window.alignmentTool) {
+        const SuperTabsAlignmentTool = window.SuperTabsAlignmentTool;
+        if (!SuperTabsAlignmentTool) {
+          throw new Error('AlignmentTool class not found');
+        }
+        window.alignmentTool = new SuperTabsAlignmentTool();
+      }
+
+      // Show alignment tool with selected components
+      await window.alignmentTool.show(selectedComponents);
+
+    } catch (error) {
+      SuperTabsLogger.error('Sidebar', 'Failed to open alignment tool', error);
+      this.showNotification('Failed to open alignment tool', 'error');
+    }
+  }
+
+  getSelectedComponents() {
+    try {
+      // Try to get selected components from NiFi's selection API
+      const selectedComponents = [];
+
+      // Look for selected elements in the canvas
+      const canvas = document.querySelector('#canvas');
+      if (!canvas) {
+        SuperTabsLogger.warn('Sidebar', 'Canvas not found');
+        return [];
+      }
+
+      // Find all selected processors
+      const selectedProcessors = canvas.querySelectorAll('.processor.selected');
+      selectedProcessors.forEach(el => {
+        const id = el.getAttribute('data-component-id') || el.id;
+        if (id) {
+          selectedComponents.push({
+            id: id,
+            type: 'processor',
+            element: el
+          });
+        }
+      });
+
+      // Find all selected ports
+      const selectedPorts = canvas.querySelectorAll('.input-port.selected, .output-port.selected');
+      selectedPorts.forEach(el => {
+        const id = el.getAttribute('data-component-id') || el.id;
+        const isInputPort = el.classList.contains('input-port');
+        if (id) {
+          selectedComponents.push({
+            id: id,
+            type: isInputPort ? 'inputPort' : 'outputPort',
+            element: el
+          });
+        }
+      });
+
+      // Find all selected labels
+      const selectedLabels = canvas.querySelectorAll('.label.selected');
+      selectedLabels.forEach(el => {
+        const id = el.getAttribute('data-component-id') || el.id;
+        if (id) {
+          selectedComponents.push({
+            id: id,
+            type: 'label',
+            element: el
+          });
+        }
+      });
+
+      SuperTabsLogger.debug('Sidebar', `Found ${selectedComponents.length} selected components`);
+      return selectedComponents;
+
+    } catch (error) {
+      SuperTabsLogger.error('Sidebar', 'Failed to get selected components', error);
+      return [];
+    }
+  }
+
+  showNotification(message, type = 'info') {
+    // Simple notification system
+    const notification = document.createElement('div');
+    notification.className = `supertabs-notification supertabs-notification-${type}`;
+    notification.innerHTML = `
+      <div class="supertabs-notification-content">
+        <i class="fas fa-${type === 'error' ? 'exclamation-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+        <span>${message}</span>
+      </div>
+    `;
+
+    document.body.appendChild(notification);
+
+    // Animate in
+    setTimeout(() => notification.classList.add('visible'), 10);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+      notification.classList.remove('visible');
+      setTimeout(() => notification.remove(), 300);
+    }, 3000);
   }
 
   isComponentSelected() {

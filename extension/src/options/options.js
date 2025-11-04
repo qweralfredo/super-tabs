@@ -26,9 +26,9 @@ class SuperTabsOptions {
   }
 
   updateUI() {
-    // NiFi Connection Settings
-    document.getElementById('nifi-url').value = this.settings.nifiBaseUrl || '';
-    document.getElementById('nifi-username').value = this.settings.nifiUsername || '';
+    // NiFi Connection Settings - With provided credentials as defaults
+    document.getElementById('nifi-url').value = this.settings.nifiBaseUrl || 'https://localhost:8443/nifi';
+    document.getElementById('nifi-username').value = this.settings.nifiUsername || 'admin';
     document.getElementById('nifi-password').value = this.settings.nifiPassword || '';
 
     // AI Configuration
