@@ -1,6 +1,14 @@
 // SuperTabs - Options Page JavaScript
 // Handles full settings configuration
 
+// Safe logger helper
+const safeLog = {
+  debug: (msg, data) => window.SuperTabsLogger?.debug(msg, data),
+  info: (msg, data) => window.SuperTabsLogger?.info(msg, data),
+  warn: (msg, data) => window.SuperTabsLogger?.warn(msg, data),
+  error: (msg, data) => window.SuperTabsLogger?.error(msg, data)
+};
+
 class SuperTabsOptions {
   constructor() {
     this.settings = {};
@@ -10,26 +18,31 @@ class SuperTabsOptions {
 
   async init() {
     try {
+      // Wait for storage to be available
+      if (typeof window.superTabsStorage === 'undefined') {
+        throw new Error('Storage não está disponível');
+      }
+      
       await this.loadSettings();
       this.setupEventListeners();
       this.updateUI();
-      SuperTabsLogger.info('Options page initialized');
+      safeLog.info('Options page initialized');
     } catch (error) {
-      SuperTabsLogger.error('Failed to initialize options page', error);
-      this.showMessage('Erro ao carregar configurações', 'error');
+      safeLog.error('Failed to initialize options page', error);
+      this.showMessage('Erro ao carregar configurações: ' + error.message, 'error');
     }
   }
 
   async loadSettings() {
     // First try to load from Chrome Storage (extension storage)
-    this.settings = await SuperTabsStorage.getSettings();
+    this.settings = await window.superTabsStorage.getSettings();
     
     // Then check if localStorage has newer data
     const localStorageSettings = this.loadFromLocalStorage();
     if (localStorageSettings) {
       // Merge localStorage settings with Chrome Storage (localStorage takes precedence if exists)
       this.settings = { ...this.settings, ...localStorageSettings };
-      SuperTabsLogger.info('Settings merged from localStorage and Chrome Storage');
+      safeLog.info('Settings merged from localStorage and Chrome Storage');
     }
     
     this.originalSettings = { ...this.settings };
@@ -118,7 +131,7 @@ class SuperTabsOptions {
       }
 
       // Save to Chrome Storage (extension storage)
-      await SuperTabsStorage.updateSettings(this.settings);
+      await window.superTabsStorage.updateSettings(this.settings);
       
       // ALSO save to localStorage for direct access
       this.saveToLocalStorage();
@@ -133,9 +146,9 @@ class SuperTabsOptions {
       // Notify other parts of extension
       chrome.runtime.sendMessage({ action: 'SETTINGS_UPDATED', settings: this.settings });
 
-      SuperTabsLogger.info('Settings saved successfully to both Chrome Storage and localStorage');
+      safeLog.info('Settings saved successfully to both Chrome Storage and localStorage');
     } catch (error) {
-      SuperTabsLogger.error('Failed to save settings', error);
+      safeLog.error('Failed to save settings', error);
       this.showMessage('Erro ao salvar configurações: ' + error.message, 'error');
     }
   }
@@ -307,7 +320,7 @@ class SuperTabsOptions {
 
   async exportSettings() {
     try {
-      const exportData = await SuperTabsStorage.exportSettings();
+      const exportData = await window.superTabsStorage.exportSettings();
       const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       
@@ -321,7 +334,7 @@ class SuperTabsOptions {
       
       this.showMessage('Configurações exportadas com sucesso!', 'success');
     } catch (error) {
-      SuperTabsLogger.error('Failed to export settings', error);
+      safeLog.error('Failed to export settings', error);
       this.showMessage('Erro ao exportar configurações: ' + error.message, 'error');
     }
   }
@@ -345,7 +358,7 @@ class SuperTabsOptions {
       }
 
       // Import settings
-      const success = await SuperTabsStorage.importSettings(importData);
+      const success = await window.superTabsStorage.importSettings(importData);
       if (success) {
         await this.loadSettings();
         this.updateUI();
@@ -354,7 +367,7 @@ class SuperTabsOptions {
         throw new Error('Falha ao importar configurações');
       }
     } catch (error) {
-      SuperTabsLogger.error('Failed to import settings', error);
+      safeLog.error('Failed to import settings', error);
       this.showMessage('Erro ao importar configurações: ' + error.message, 'error');
     } finally {
       // Clear file input
@@ -369,23 +382,23 @@ class SuperTabsOptions {
 
     try {
       // Clear Chrome Storage
-      await SuperTabsStorage.clearAllData();
+      await window.superTabsStorage.clearAllData();
       
       // Clear localStorage
       this.clearLocalStorage();
       
-      this.settings = SuperTabsStorage.getDefaultSettings();
+      this.settings = window.superTabsStorage.defaultSettings();
       this.originalSettings = { ...this.settings };
-      await SuperTabsStorage.updateSettings(this.settings);
+      await window.superTabsStorage.updateSettings(this.settings);
       
       this.updateUI();
       this.hasUnsavedChanges = false;
       document.getElementById('save-settings').textContent = 'Salvar Configurações';
       
       this.showMessage('Configurações resetadas (Chrome Storage + localStorage limpo)', 'success');
-      SuperTabsLogger.info('Settings reset to defaults, localStorage cleared');
+      safeLog.info('Settings reset to defaults, localStorage cleared');
     } catch (error) {
-      SuperTabsLogger.error('Failed to reset settings', error);
+      safeLog.error('Failed to reset settings', error);
       this.showMessage('Erro ao resetar configurações: ' + error.message, 'error');
     }
   }
@@ -409,9 +422,9 @@ class SuperTabsOptions {
       ];
       
       keysToRemove.forEach(key => localStorage.removeItem(key));
-      SuperTabsLogger.debug('localStorage cleared');
+      safeLog.debug('localStorage cleared');
     } catch (error) {
-      SuperTabsLogger.error('Failed to clear localStorage', error);
+      safeLog.error('Failed to clear localStorage', error);
     }
   }
 
@@ -495,9 +508,9 @@ class SuperTabsOptions {
         }
       });
       
-      SuperTabsLogger.info('localStorage viewer opened', { items: superTabsKeys.length });
+      safeLog.info('localStorage viewer opened', { items: superTabsKeys.length });
     } catch (error) {
-      SuperTabsLogger.error('Failed to view localStorage', error);
+      safeLog.error('Failed to view localStorage', error);
       alert('Erro ao visualizar localStorage: ' + error.message);
     }
   }
@@ -532,9 +545,9 @@ class SuperTabsOptions {
       localStorage.setItem('supertabs-expression-enabled', this.settings.expressionLanguageEnabled ? 'true' : 'false');
       localStorage.setItem('supertabs-debug-mode', this.settings.debugMode ? 'true' : 'false');
       
-      SuperTabsLogger.debug('Settings saved to localStorage');
+      safeLog.debug('Settings saved to localStorage');
     } catch (error) {
-      SuperTabsLogger.error('Failed to save to localStorage', error);
+      safeLog.error('Failed to save to localStorage', error);
     }
   }
 
@@ -544,7 +557,7 @@ class SuperTabsOptions {
       if (localStorageData) {
         const data = JSON.parse(localStorageData);
         if (data.settings) {
-          SuperTabsLogger.info('Settings loaded from localStorage', data.timestamp);
+          safeLog.info('Settings loaded from localStorage', data.timestamp);
           return data.settings;
         }
       }
@@ -565,11 +578,11 @@ class SuperTabsOptions {
       
       // Check if any settings exist
       if (Object.values(individualSettings).some(v => v !== '' && v !== false)) {
-        SuperTabsLogger.info('Settings loaded from individual localStorage items');
+        safeLog.info('Settings loaded from individual localStorage items');
         return individualSettings;
       }
     } catch (error) {
-      SuperTabsLogger.error('Failed to load from localStorage', error);
+      safeLog.error('Failed to load from localStorage', error);
     }
     return null;
   }
