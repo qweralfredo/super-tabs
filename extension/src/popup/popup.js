@@ -52,7 +52,6 @@ class SuperTabsPopup {
         alignmentEnabled: true,
         expressionLanguageEnabled: true,
         debugMode: false,
-        phi4ApiKey: '',
         claudeApiKey: '',
         preferClaude: false
       };

@@ -1,0 +1,94 @@
+{
+  "manifest_version": 3,
+  "name": "SuperTabs - Apache NiFi Assistant",
+  "version": "1.0.0",
+  "description": "AI-powered productivity extension for Apache NiFi with intelligent component analysis, auto-alignment, and Expression Language generation",
+  
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "tabs"
+  ],
+  
+  "host_permissions": [
+    "https://localhost:8443/*",
+    "https://*/nifi/*"
+  ],
+  
+  "background": {
+    "service_worker": "src/background/service-worker.js",
+    "type": "module"
+  },
+  
+  "content_scripts": [
+    {
+      "matches": [
+        "https://localhost:8443/nifi/*",
+        "https://*/nifi/*",
+        "file://*/*"
+      ],
+      "js": [
+        "src/utils/logger.js",
+        "src/utils/storage.js",
+        "src/content/nifi-api-client.js",
+        "src/content/phi4-agent.js",
+        "src/content/icons-manager.js",
+        "src/content/canvas-detector.js",
+        "src/content/info-tab.js",
+        "src/content/stats-tab.js",
+        "src/content/chat-tab.js",
+        "src/content/sidebar.js",
+        "src/content/alignment-tool.js",
+        "src/content/expression-language-generator.js",
+        "src/content/content-script.js"
+      ],
+      "css": [
+        "src/content/nifi-theme.css",
+        "src/content/nifi-icons.css",
+        "src/content/supertabs.css",
+        "src/content/sidebar.css",
+        "src/content/tabs.css",
+        "src/content/expression-language-generator.css",
+        "src/content/alignment-tool.css"
+      ],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+  
+  "action": {
+    "default_popup": "src/popup/popup.html",
+    "default_title": "SuperTabs - NiFi Assistant",
+    "default_icon": {
+      "16": "icons/apache_nifi_logo_icon_168614.png",
+      "32": "icons/apache_nifi_logo_icon_168614.png",
+      "48": "icons/apache_nifi_logo_icon_168614.png",
+      "128": "icons/apache_nifi_logo_icon_168614.png"
+    }
+  },
+  
+  "icons": {
+    "16": "icons/apache_nifi_logo_icon_168614.png",
+    "32": "icons/apache_nifi_logo_icon_168614.png",
+    "48": "icons/apache_nifi_logo_icon_168614.png",
+    "128": "icons/apache_nifi_logo_icon_168614.png"
+  },
+  
+  "options_page": "src/options/options.html",
+  
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "icons/*",
+        "src/content/*.css",
+        "src/content/*.js"
+      ],
+      "matches": [
+        "https://localhost:8443/*",
+        "https://*/*",
+        "file://*/*"
+      ]
+    }
+  ]
+}

@@ -55,7 +55,6 @@ class SuperTabsOptions {
     document.getElementById('nifi-password').value = this.settings.nifiPassword || '';
 
     // AI Configuration
-    document.getElementById('phi4-api-key').value = this.settings.phi4ApiKey || '';
     document.getElementById('claude-api-key').value = this.settings.claudeApiKey || '';
     this.setToggleState('prefer-claude-toggle', this.settings.preferClaude);
   }
@@ -157,7 +156,6 @@ class SuperTabsOptions {
     this.settings.nifiBaseUrl = document.getElementById('nifi-url').value.trim();
     this.settings.nifiUsername = document.getElementById('nifi-username').value.trim();
     this.settings.nifiPassword = document.getElementById('nifi-password').value;
-    this.settings.phi4ApiKey = document.getElementById('phi4-api-key').value.trim();
     this.settings.claudeApiKey = document.getElementById('claude-api-key').value.trim();
   }
 
@@ -169,11 +167,9 @@ class SuperTabsOptions {
       errors.push('URL do NiFi inválida');
     }
 
-    // Validate required fields if AI is configured
-    if (this.settings.phi4ApiKey || this.settings.claudeApiKey) {
-      if (this.settings.preferClaude && !this.settings.claudeApiKey) {
-        errors.push('Chave API do Claude é obrigatória quando Claude é preferido');
-      }
+    // Validate Claude API key if preferred
+    if (this.settings.preferClaude && !this.settings.claudeApiKey) {
+      errors.push('Chave API do Claude é obrigatória quando Claude é preferido');
     }
 
     return {
@@ -279,14 +275,9 @@ class SuperTabsOptions {
 
       this.collectFormValues();
 
-      const hasAnyKey = this.settings.phi4ApiKey || this.settings.claudeApiKey;
-      if (!hasAnyKey) {
-        throw new Error('Nenhuma chave API configurada');
-      }
-
-      // Mock test since we don't have real API endpoints yet
-      const preferredModel = (this.settings.preferClaude && this.settings.claudeApiKey) ? 'Claude' : 'PHI-4';
-      const hasRequiredKey = preferredModel === 'Claude' ? this.settings.claudeApiKey : this.settings.phi4ApiKey;
+      // Claude requires API key, PHI-4 doesn't
+      const preferredModel = this.settings.preferClaude ? 'Claude' : 'PHI-4';
+      const hasRequiredKey = preferredModel === 'Claude' ? this.settings.claudeApiKey : true; // PHI-4 sempre disponível
 
       if (!hasRequiredKey) {
         throw new Error(`Chave API do ${preferredModel} não configurada`);
@@ -412,7 +403,6 @@ class SuperTabsOptions {
         'supertabs-nifi-url',
         'supertabs-nifi-username',
         'supertabs-nifi-password',
-        'supertabs-phi4-api-key',
         'supertabs-claude-api-key',
         'supertabs-prefer-claude',
         'supertabs-auto-open',
@@ -537,7 +527,6 @@ class SuperTabsOptions {
       localStorage.setItem('supertabs-nifi-url', this.settings.nifiBaseUrl || '');
       localStorage.setItem('supertabs-nifi-username', this.settings.nifiUsername || '');
       localStorage.setItem('supertabs-nifi-password', this.settings.nifiPassword || '');
-      localStorage.setItem('supertabs-phi4-api-key', this.settings.phi4ApiKey || '');
       localStorage.setItem('supertabs-claude-api-key', this.settings.claudeApiKey || '');
       localStorage.setItem('supertabs-prefer-claude', this.settings.preferClaude ? 'true' : 'false');
       localStorage.setItem('supertabs-auto-open', this.settings.autoOpen ? 'true' : 'false');
@@ -567,7 +556,6 @@ class SuperTabsOptions {
         nifiBaseUrl: localStorage.getItem('supertabs-nifi-url') || '',
         nifiUsername: localStorage.getItem('supertabs-nifi-username') || '',
         nifiPassword: localStorage.getItem('supertabs-nifi-password') || '',
-        phi4ApiKey: localStorage.getItem('supertabs-phi4-api-key') || '',
         claudeApiKey: localStorage.getItem('supertabs-claude-api-key') || '',
         preferClaude: localStorage.getItem('supertabs-prefer-claude') === 'true',
         autoOpen: localStorage.getItem('supertabs-auto-open') === 'true',
