@@ -3,6 +3,14 @@
  * Displays component statistics and performance metrics
  */
 
+// Safe logger helper
+const safeLog = {
+  debug: (msg, data) => window.SuperTabsLogger?.debug(msg, data),
+  info: (msg, data) => window.SuperTabsLogger?.info(msg, data),
+  warn: (msg, data) => window.SuperTabsLogger?.warn(msg, data),
+  error: (msg, data) => window.SuperTabsLogger?.error(msg, data)
+};
+
 class SuperTabsStatsTab {
   constructor(container) {
     this.container = container;
@@ -20,7 +28,7 @@ class SuperTabsStatsTab {
 
   async initialize() {
     try {
-      SuperTabsLogger.debug('StatsTab', 'Initializing stats tab');
+      safeLog.debug('Stats tab initializing');
       
       // Get NiFi API instance
       this.nifiApi = window.superTabsNifiApi;
@@ -31,16 +39,16 @@ class SuperTabsStatsTab {
       // Start auto-refresh for general stats
       this.startAutoRefresh();
       
-      SuperTabsLogger.info('StatsTab', 'Stats tab initialized');
+      safeLog.info('Stats tab initialized');
     } catch (error) {
-      SuperTabsLogger.error('StatsTab', 'Failed to initialize stats tab', error);
+      safeLog.error('Failed to initialize stats tab', error);
       this.showError('Failed to initialize statistics');
     }
   }
 
   async setComponent(component) {
     try {
-      SuperTabsLogger.debug('StatsTab', 'Setting component for stats tab', { id: component?.id });
+      safeLog.debug('Setting component for stats tab', { id: component?.id });
       
       this.component = component;
       
@@ -61,7 +69,7 @@ class SuperTabsStatsTab {
       this.startAutoRefresh();
       
     } catch (error) {
-      SuperTabsLogger.error('StatsTab', 'Failed to set component', error);
+      safeLog.error('Failed to set component', error);
       this.showError('Failed to load component statistics');
     }
   }
@@ -79,7 +87,7 @@ class SuperTabsStatsTab {
       this.isLoading = true;
       this.showLoading();
 
-      SuperTabsLogger.debug('StatsTab', 'Loading general NiFi statistics');
+      safeLog.debug('Loading general NiFi statistics');
 
       // Get authentication token
       const nifiUrl = 'https://localhost:8443/nifi-api';
@@ -154,10 +162,10 @@ class SuperTabsStatsTab {
 
       this.renderGeneralStats(generalStats);
 
-      SuperTabsLogger.info('StatsTab', 'General statistics loaded successfully');
+      safeLog.info('General statistics loaded successfully');
 
     } catch (error) {
-      SuperTabsLogger.error('StatsTab', 'Failed to load general stats', error);
+      safeLog.error('Failed to load general stats', error);
       this.showError(`Failed to load NiFi statistics: ${error.message}`);
     } finally {
       this.isLoading = false;
@@ -330,7 +338,7 @@ class SuperTabsStatsTab {
       this.renderComponentStats(stats);
       
     } catch (error) {
-      SuperTabsLogger.error('StatsTab', 'Failed to load component stats', error);
+      safeLog.error('Failed to load component stats', error);
       this.showError('Failed to load component statistics');
     } finally {
       this.isLoading = false;
@@ -398,7 +406,7 @@ class SuperTabsStatsTab {
       }
 
     } catch (error) {
-      SuperTabsLogger.warn('StatsTab', 'Failed to gather complete stats', error);
+      safeLog.warn('Failed to gather complete stats', error);
     }
 
     return stats;
@@ -427,7 +435,7 @@ class SuperTabsStatsTab {
       return this.extractAPIStats(response);
       
     } catch (error) {
-      SuperTabsLogger.warn('StatsTab', 'Failed to get stats from API', error);
+      safeLog.warn('Failed to get stats from API', error);
       return null;
     }
   }
@@ -853,15 +861,15 @@ class SuperTabsStatsTab {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       
-      SuperTabsLogger.info('StatsTab', 'Statistics exported');
+      safeLog.info('Statistics exported');
     } catch (error) {
-      SuperTabsLogger.error('StatsTab', 'Failed to export statistics', error);
+      safeLog.error('Failed to export statistics', error);
     }
   }
 
   clearHistory() {
     this.stats.history = [];
-    SuperTabsLogger.info('StatsTab', 'Statistics history cleared');
+    safeLog.info('Statistics history cleared');
     
     // Re-render to update the table
     if (this.stats.current && Object.keys(this.stats.current).length > 0) {

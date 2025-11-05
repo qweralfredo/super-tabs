@@ -166,8 +166,8 @@ class SuperTabsSidebar {
     const closeBtn = this.element.querySelector('#supertabs-close-btn');
     const alignBtn = this.element.querySelector('#supertabs-align-btn');
 
-    minimizeBtn?.addEventListener('click', () => this.minimize());
-    resizeBtn?.addEventListener('click', () => this.toggleSize());
+    minimizeBtn?.addEventListener('click', () => this.toggleMinimize());
+    resizeBtn?.addEventListener('click', () => this.toggleFullWidth());
     closeBtn?.addEventListener('click', () => this.hide());
     alignBtn?.addEventListener('click', () => this.openAlignmentTool());
 
@@ -283,11 +283,40 @@ class SuperTabsSidebar {
     this.updateComponentInfo(null);
   }
 
-  minimize() {
-    this.element.classList.toggle('minimized');
+  toggleMinimize() {
+    const tabContent = this.element.querySelector('.supertabs-tabs-container');
+    const componentInfo = this.element.querySelector('.supertabs-component-info');
     const isMinimized = this.element.classList.contains('minimized');
     
-    SuperTabsLogger.debug('Sidebar', `Sidebar ${isMinimized ? 'minimized' : 'expanded'}`);
+    if (isMinimized) {
+      // Expandir
+      this.element.classList.remove('minimized');
+      if (tabContent) tabContent.style.display = '';
+      if (componentInfo) componentInfo.style.display = '';
+      SuperTabsLogger.debug('Sidebar', 'Sidebar expanded');
+    } else {
+      // Minimizar
+      this.element.classList.add('minimized');
+      if (tabContent) tabContent.style.display = 'none';
+      if (componentInfo) componentInfo.style.display = 'none';
+      SuperTabsLogger.debug('Sidebar', 'Sidebar minimized');
+    }
+  }
+
+  toggleFullWidth() {
+    const isFullWidth = this.element.classList.contains('full-width');
+    
+    if (isFullWidth) {
+      // Restaurar largura normal
+      this.element.classList.remove('full-width');
+      this.element.style.width = `${this.resizeWidth}px`;
+      SuperTabsLogger.debug('Sidebar', 'Sidebar normal width');
+    } else {
+      // Largura 100%
+      this.element.classList.add('full-width');
+      this.element.style.width = '100%';
+      SuperTabsLogger.debug('Sidebar', 'Sidebar full width');
+    }
   }
 
   toggleSize() {

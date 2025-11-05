@@ -21,7 +21,17 @@ class SuperTabsOptions {
   }
 
   async loadSettings() {
+    // First try to load from Chrome Storage (extension storage)
     this.settings = await SuperTabsStorage.getSettings();
+    
+    // Then check if localStorage has newer data
+    const localStorageSettings = this.loadFromLocalStorage();
+    if (localStorageSettings) {
+      // Merge localStorage settings with Chrome Storage (localStorage takes precedence if exists)
+      this.settings = { ...this.settings, ...localStorageSettings };
+      SuperTabsLogger.info('Settings merged from localStorage and Chrome Storage');
+    }
+    
     this.originalSettings = { ...this.settings };
   }
 
@@ -35,14 +45,6 @@ class SuperTabsOptions {
     document.getElementById('phi4-api-key').value = this.settings.phi4ApiKey || '';
     document.getElementById('claude-api-key').value = this.settings.claudeApiKey || '';
     this.setToggleState('prefer-claude-toggle', this.settings.preferClaude);
-
-    // Features
-    this.setToggleState('auto-open-toggle', this.settings.autoOpen);
-    this.setToggleState('alignment-toggle', this.settings.alignmentEnabled);
-    this.setToggleState('expression-toggle', this.settings.expressionLanguageEnabled);
-
-    // Advanced
-    this.setToggleState('debug-toggle', this.settings.debugMode);
   }
 
   setupEventListeners() {
@@ -54,24 +56,17 @@ class SuperTabsOptions {
 
     // Toggle switches
     this.setupToggleListener('prefer-claude-toggle', 'preferClaude');
-    this.setupToggleListener('auto-open-toggle', 'autoOpen');
-    this.setupToggleListener('alignment-toggle', 'alignmentEnabled');
-    this.setupToggleListener('expression-toggle', 'expressionLanguageEnabled');
-    this.setupToggleListener('debug-toggle', 'debugMode');
 
     // Action buttons
     document.getElementById('save-settings').addEventListener('click', () => this.saveSettings());
     document.getElementById('cancel-settings').addEventListener('click', () => this.cancelChanges());
     document.getElementById('test-all').addEventListener('click', () => this.testAll());
-    document.getElementById('reset-settings').addEventListener('click', () => this.resetSettings());
 
     // Test buttons
     document.getElementById('test-nifi-connection').addEventListener('click', () => this.testNiFiConnection());
     document.getElementById('test-ai-connection').addEventListener('click', () => this.testAIConnection());
 
-    // Import/Export
-    document.getElementById('export-settings').addEventListener('click', () => this.exportSettings());
-    document.getElementById('import-file').addEventListener('change', (e) => this.importSettings(e));
+    // Import/Export - Removidos (botões não existem mais)
 
     // Prevent accidental close
     window.addEventListener('beforeunload', (e) => {
@@ -122,19 +117,23 @@ class SuperTabsOptions {
         return;
       }
 
-      // Save to storage
+      // Save to Chrome Storage (extension storage)
       await SuperTabsStorage.updateSettings(this.settings);
+      
+      // ALSO save to localStorage for direct access
+      this.saveToLocalStorage();
+      
       this.originalSettings = { ...this.settings };
       this.hasUnsavedChanges = false;
 
       // Update UI
       document.getElementById('save-settings').textContent = 'Salvar Configurações';
-      this.showMessage('Configurações salvas com sucesso!', 'success');
+      this.showMessage('Configurações salvas com sucesso! (Chrome Storage + localStorage)', 'success');
 
       // Notify other parts of extension
       chrome.runtime.sendMessage({ action: 'SETTINGS_UPDATED', settings: this.settings });
 
-      SuperTabsLogger.info('Settings saved successfully');
+      SuperTabsLogger.info('Settings saved successfully to both Chrome Storage and localStorage');
     } catch (error) {
       SuperTabsLogger.error('Failed to save settings', error);
       this.showMessage('Erro ao salvar configurações: ' + error.message, 'error');
@@ -369,7 +368,12 @@ class SuperTabsOptions {
     }
 
     try {
+      // Clear Chrome Storage
       await SuperTabsStorage.clearAllData();
+      
+      // Clear localStorage
+      this.clearLocalStorage();
+      
       this.settings = SuperTabsStorage.getDefaultSettings();
       this.originalSettings = { ...this.settings };
       await SuperTabsStorage.updateSettings(this.settings);
@@ -378,11 +382,123 @@ class SuperTabsOptions {
       this.hasUnsavedChanges = false;
       document.getElementById('save-settings').textContent = 'Salvar Configurações';
       
-      this.showMessage('Configurações resetadas para os valores padrão', 'success');
-      SuperTabsLogger.info('Settings reset to defaults');
+      this.showMessage('Configurações resetadas (Chrome Storage + localStorage limpo)', 'success');
+      SuperTabsLogger.info('Settings reset to defaults, localStorage cleared');
     } catch (error) {
       SuperTabsLogger.error('Failed to reset settings', error);
       this.showMessage('Erro ao resetar configurações: ' + error.message, 'error');
+    }
+  }
+
+  clearLocalStorage() {
+    try {
+      // Remove all SuperTabs items from localStorage
+      const keysToRemove = [
+        'supertabs-settings',
+        'supertabs-draft-settings',
+        'supertabs-nifi-url',
+        'supertabs-nifi-username',
+        'supertabs-nifi-password',
+        'supertabs-phi4-api-key',
+        'supertabs-claude-api-key',
+        'supertabs-prefer-claude',
+        'supertabs-auto-open',
+        'supertabs-alignment-enabled',
+        'supertabs-expression-enabled',
+        'supertabs-debug-mode'
+      ];
+      
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+      SuperTabsLogger.debug('localStorage cleared');
+    } catch (error) {
+      SuperTabsLogger.error('Failed to clear localStorage', error);
+    }
+  }
+
+  viewLocalStorage() {
+    try {
+      // Collect all SuperTabs localStorage items
+      const localStorageData = {};
+      const superTabsKeys = [];
+      
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith('supertabs-')) {
+          superTabsKeys.push(key);
+          localStorageData[key] = localStorage.getItem(key);
+        }
+      }
+      
+      if (superTabsKeys.length === 0) {
+        alert('Nenhum dado SuperTabs encontrado no localStorage');
+        return;
+      }
+      
+      // Create modal to display localStorage
+      const modal = document.createElement('div');
+      modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.7);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      `;
+      
+      const content = document.createElement('div');
+      content.style.cssText = `
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        max-width: 800px;
+        max-height: 80vh;
+        overflow: auto;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      `;
+      
+      content.innerHTML = `
+        <h2 style="margin-top: 0; color: var(--nifi-primary-blue);">
+          🔍 localStorage SuperTabs
+        </h2>
+        <p style="color: var(--nifi-gray-medium); margin-bottom: 20px;">
+          Total de itens: <strong>${superTabsKeys.length}</strong>
+        </p>
+        <pre style="
+          background: var(--nifi-gray-lighter);
+          padding: 15px;
+          border-radius: 4px;
+          overflow: auto;
+          font-size: 12px;
+          max-height: 400px;
+        ">${JSON.stringify(localStorageData, null, 2)}</pre>
+        <div style="margin-top: 20px; display: flex; gap: 10px;">
+          <button class="supertabs-btn primary" onclick="this.closest('div').parentElement.parentElement.remove()">
+            Fechar
+          </button>
+          <button class="supertabs-btn" onclick="navigator.clipboard.writeText(this.previousElementSibling.previousElementSibling.textContent).then(() => alert('Copiado!'))">
+            Copiar JSON
+          </button>
+        </div>
+      `;
+      
+      modal.appendChild(content);
+      document.body.appendChild(modal);
+      
+      // Close on click outside
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.remove();
+        }
+      });
+      
+      SuperTabsLogger.info('localStorage viewer opened', { items: superTabsKeys.length });
+    } catch (error) {
+      SuperTabsLogger.error('Failed to view localStorage', error);
+      alert('Erro ao visualizar localStorage: ' + error.message);
     }
   }
 
@@ -391,6 +507,71 @@ class SuperTabsOptions {
       this.collectFormValues();
       localStorage.setItem('supertabs-draft-settings', JSON.stringify(this.settings));
     }
+  }
+
+  saveToLocalStorage() {
+    try {
+      // Save complete settings to localStorage
+      const localStorageData = {
+        settings: this.settings,
+        timestamp: new Date().toISOString(),
+        version: '1.0.0'
+      };
+      
+      localStorage.setItem('supertabs-settings', JSON.stringify(localStorageData));
+      
+      // Also save individual items for easy access
+      localStorage.setItem('supertabs-nifi-url', this.settings.nifiBaseUrl || '');
+      localStorage.setItem('supertabs-nifi-username', this.settings.nifiUsername || '');
+      localStorage.setItem('supertabs-nifi-password', this.settings.nifiPassword || '');
+      localStorage.setItem('supertabs-phi4-api-key', this.settings.phi4ApiKey || '');
+      localStorage.setItem('supertabs-claude-api-key', this.settings.claudeApiKey || '');
+      localStorage.setItem('supertabs-prefer-claude', this.settings.preferClaude ? 'true' : 'false');
+      localStorage.setItem('supertabs-auto-open', this.settings.autoOpen ? 'true' : 'false');
+      localStorage.setItem('supertabs-alignment-enabled', this.settings.alignmentEnabled ? 'true' : 'false');
+      localStorage.setItem('supertabs-expression-enabled', this.settings.expressionLanguageEnabled ? 'true' : 'false');
+      localStorage.setItem('supertabs-debug-mode', this.settings.debugMode ? 'true' : 'false');
+      
+      SuperTabsLogger.debug('Settings saved to localStorage');
+    } catch (error) {
+      SuperTabsLogger.error('Failed to save to localStorage', error);
+    }
+  }
+
+  loadFromLocalStorage() {
+    try {
+      const localStorageData = localStorage.getItem('supertabs-settings');
+      if (localStorageData) {
+        const data = JSON.parse(localStorageData);
+        if (data.settings) {
+          SuperTabsLogger.info('Settings loaded from localStorage', data.timestamp);
+          return data.settings;
+        }
+      }
+      
+      // Fallback: try to load individual items
+      const individualSettings = {
+        nifiBaseUrl: localStorage.getItem('supertabs-nifi-url') || '',
+        nifiUsername: localStorage.getItem('supertabs-nifi-username') || '',
+        nifiPassword: localStorage.getItem('supertabs-nifi-password') || '',
+        phi4ApiKey: localStorage.getItem('supertabs-phi4-api-key') || '',
+        claudeApiKey: localStorage.getItem('supertabs-claude-api-key') || '',
+        preferClaude: localStorage.getItem('supertabs-prefer-claude') === 'true',
+        autoOpen: localStorage.getItem('supertabs-auto-open') === 'true',
+        alignmentEnabled: localStorage.getItem('supertabs-alignment-enabled') === 'true',
+        expressionLanguageEnabled: localStorage.getItem('supertabs-expression-enabled') === 'true',
+        debugMode: localStorage.getItem('supertabs-debug-mode') === 'true'
+      };
+      
+      // Check if any settings exist
+      if (Object.values(individualSettings).some(v => v !== '' && v !== false)) {
+        SuperTabsLogger.info('Settings loaded from individual localStorage items');
+        return individualSettings;
+      }
+    } catch (error) {
+      SuperTabsLogger.error('Failed to load from localStorage', error);
+    }
+    return null;
   }
 
   loadDraft() {
@@ -429,20 +610,6 @@ class SuperTabsOptions {
         messageDiv.parentNode.removeChild(messageDiv);
       }
     });
-  }
-}
-
-// Global functions for HTML
-function togglePassword(inputId) {
-  const input = document.getElementById(inputId);
-  const button = input.parentNode.querySelector('.password-toggle');
-  
-  if (input.type === 'password') {
-    input.type = 'text';
-    button.textContent = '🙈';
-  } else {
-    input.type = 'password';
-    button.textContent = '👁️';
   }
 }
 

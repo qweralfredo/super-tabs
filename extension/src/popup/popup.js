@@ -105,36 +105,39 @@ class SuperTabsPopup {
   }
 
   updateNiFiStatus() {
-    const statusElement = document.getElementById('nifi-status');
-    const dot = statusElement.querySelector('.status-dot');
-    const text = statusElement.querySelector('span');
+    const statusIcon = document.getElementById('nifi-status-icon');
+    const statusItem = document.getElementById('nifi-status-item');
 
     if (this.isNiFiPage) {
-      statusElement.className = 'status-indicator connected';
-      dot.className = 'status-dot connected';
-      text.textContent = 'Conectado ao NiFi';
+      // Conectado
+      statusIcon.className = 'status-icon connected';
+      statusIcon.innerHTML = '<i class="fa fa-check-circle"></i>';
+      statusItem.title = 'Conectado ao NiFi';
     } else {
-      statusElement.className = 'status-indicator inactive';
-      dot.className = 'status-dot inactive';
-      text.textContent = 'Abra uma página do NiFi';
+      // Desconectado
+      statusIcon.className = 'status-icon disconnected';
+      statusIcon.innerHTML = '<i class="fa fa-times-circle"></i>';
+      statusItem.title = 'Abra uma página do NiFi';
     }
   }
 
   updateAIStatus() {
-    const statusElement = document.getElementById('ai-status');
-    const dot = statusElement.querySelector('.status-dot');
-    const text = statusElement.querySelector('span');
+    const statusIcon = document.getElementById('ai-status-icon');
+    const statusItem = document.getElementById('ai-status-item');
 
     const hasAIKey = this.settings.phi4ApiKey || this.settings.claudeApiKey;
 
     if (hasAIKey) {
-      statusElement.className = 'status-indicator connected';
-      dot.className = 'status-dot connected';
-      text.textContent = `IA configurada (${this.settings.preferClaude && this.settings.claudeApiKey ? 'Claude' : 'PHI-4'})`;
+      // IA configurada
+      statusIcon.className = 'status-icon connected';
+      statusIcon.innerHTML = '<i class="fa fa-check-circle"></i>';
+      const aiModel = this.settings.preferClaude && this.settings.claudeApiKey ? 'Claude' : 'PHI-4';
+      statusItem.title = `IA configurada (${aiModel})`;
     } else {
-      statusElement.className = 'status-indicator inactive';
-      dot.className = 'status-dot inactive';
-      text.textContent = 'Configure as chaves da IA';
+      // IA não configurada
+      statusIcon.className = 'status-icon inactive';
+      statusIcon.innerHTML = '<i class="fa fa-exclamation-circle"></i>';
+      statusItem.title = 'Configure as chaves da IA';
     }
   }
 
@@ -162,6 +165,13 @@ class SuperTabsPopup {
         button.style.pointerEvents = this.isNiFiPage ? 'auto' : 'none';
       }
     });
+
+    // Settings button is always enabled
+    const settingsBtn = document.getElementById('open-settings');
+    if (settingsBtn) {
+      settingsBtn.style.opacity = '1';
+      settingsBtn.style.pointerEvents = 'auto';
+    }
   }
 
   setupEventListeners() {
@@ -176,11 +186,6 @@ class SuperTabsPopup {
     document.getElementById('open-expression-generator')?.addEventListener('click', () => this.openExpressionGenerator());
     document.getElementById('align-components')?.addEventListener('click', () => this.alignComponents());
     document.getElementById('open-settings')?.addEventListener('click', () => this.openSettings());
-
-    // Footer links
-    document.getElementById('open-full-settings')?.addEventListener('click', () => this.openFullSettings());
-    document.getElementById('view-logs')?.addEventListener('click', () => this.viewLogs());
-    document.getElementById('export-settings')?.addEventListener('click', () => this.exportSettings());
   }
 
   setupToggleListener(toggleId, settingKey) {
@@ -260,7 +265,7 @@ class SuperTabsPopup {
 
     try {
       await chrome.tabs.sendMessage(this.currentTab.id, {
-        action: 'OPEN_EXPRESSION_GENERATOR'
+        action: 'OPEN_EXPRESSION_LANGUAGE_GENERATOR'
       });
       window.close();
     } catch (error) {
@@ -302,13 +307,6 @@ class SuperTabsPopup {
     }
   }
 
-  openFullSettings() {
-    if (this.isExtensionContext) {
-      chrome.runtime.openOptionsPage();
-      window.close();
-    }
-  }
-
   async viewLogs() {
     try {
       let logs = '';
@@ -340,40 +338,6 @@ class SuperTabsPopup {
         console.error('[SuperTabs] Failed to export logs:', error);
       }
       this.showTemporaryMessage('Erro ao exportar logs', 'error');
-    }
-  }
-
-  async exportSettings() {
-    try {
-      let exportData = '';
-      if (typeof superTabsStorage !== 'undefined') {
-        exportData = await superTabsStorage.exportSettings();
-      } else {
-        exportData = JSON.stringify(this.settings, null, 2);
-      }
-      
-      if (this.isExtensionContext) {
-        const blob = new Blob([exportData], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        
-        await chrome.downloads.download({
-          url: url,
-          filename: `supertabs-settings-${new Date().toISOString().slice(0, 19)}.json`
-        });
-        
-        this.showTemporaryMessage('Configurações exportadas', 'success');
-      } else {
-        // Fallback for testing
-        console.log('[SuperTabs] Export settings:', exportData);
-        this.showTemporaryMessage('Configurações mostradas no console', 'info');
-      }
-    } catch (error) {
-      if (typeof SuperTabsLogger !== 'undefined') {
-        SuperTabsLogger.error('Failed to export settings', error);
-      } else {
-        console.error('[SuperTabs] Failed to export settings:', error);
-      }
-      this.showTemporaryMessage('Erro ao exportar configurações', 'error');
     }
   }
 
