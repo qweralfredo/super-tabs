@@ -1,6 +1,14 @@
 // SuperTabs - Options Page JavaScript
 // Handles full settings configuration
 
+// Safe logger helper
+const safeLog = {
+  debug: (msg, data) => window.SuperTabsLogger?.debug(msg, data),
+  info: (msg, data) => window.SuperTabsLogger?.info(msg, data),
+  warn: (msg, data) => window.SuperTabsLogger?.warn(msg, data),
+  error: (msg, data) => window.SuperTabsLogger?.error(msg, data)
+};
+
 class SuperTabsOptions {
   constructor() {
     this.settings = {};
@@ -10,39 +18,45 @@ class SuperTabsOptions {
 
   async init() {
     try {
+      // Wait for storage to be available
+      if (typeof window.superTabsStorage === 'undefined') {
+        throw new Error('Storage não está disponível');
+      }
+      
       await this.loadSettings();
       this.setupEventListeners();
       this.updateUI();
-      SuperTabsLogger.info('Options page initialized');
+      safeLog.info('Options page initialized');
     } catch (error) {
-      SuperTabsLogger.error('Failed to initialize options page', error);
-      this.showMessage('Erro ao carregar configurações', 'error');
+      safeLog.error('Failed to initialize options page', error);
+      this.showMessage('Erro ao carregar configurações: ' + error.message, 'error');
     }
   }
 
   async loadSettings() {
-    this.settings = await SuperTabsStorage.getSettings();
+    // First try to load from Chrome Storage (extension storage)
+    this.settings = await window.superTabsStorage.getSettings();
+    
+    // Then check if localStorage has newer data
+    const localStorageSettings = this.loadFromLocalStorage();
+    if (localStorageSettings) {
+      // Merge localStorage settings with Chrome Storage (localStorage takes precedence if exists)
+      this.settings = { ...this.settings, ...localStorageSettings };
+      safeLog.info('Settings merged from localStorage and Chrome Storage');
+    }
+    
     this.originalSettings = { ...this.settings };
   }
 
   updateUI() {
-    // NiFi Connection Settings
-    document.getElementById('nifi-url').value = this.settings.nifiBaseUrl || '';
-    document.getElementById('nifi-username').value = this.settings.nifiUsername || '';
+    // NiFi Connection Settings - With provided credentials as defaults
+    document.getElementById('nifi-url').value = this.settings.nifiBaseUrl || 'https://localhost:8443/nifi';
+    document.getElementById('nifi-username').value = this.settings.nifiUsername || 'admin';
     document.getElementById('nifi-password').value = this.settings.nifiPassword || '';
 
     // AI Configuration
-    document.getElementById('phi4-api-key').value = this.settings.phi4ApiKey || '';
     document.getElementById('claude-api-key').value = this.settings.claudeApiKey || '';
     this.setToggleState('prefer-claude-toggle', this.settings.preferClaude);
-
-    // Features
-    this.setToggleState('auto-open-toggle', this.settings.autoOpen);
-    this.setToggleState('alignment-toggle', this.settings.alignmentEnabled);
-    this.setToggleState('expression-toggle', this.settings.expressionLanguageEnabled);
-
-    // Advanced
-    this.setToggleState('debug-toggle', this.settings.debugMode);
   }
 
   setupEventListeners() {
@@ -54,24 +68,17 @@ class SuperTabsOptions {
 
     // Toggle switches
     this.setupToggleListener('prefer-claude-toggle', 'preferClaude');
-    this.setupToggleListener('auto-open-toggle', 'autoOpen');
-    this.setupToggleListener('alignment-toggle', 'alignmentEnabled');
-    this.setupToggleListener('expression-toggle', 'expressionLanguageEnabled');
-    this.setupToggleListener('debug-toggle', 'debugMode');
 
     // Action buttons
     document.getElementById('save-settings').addEventListener('click', () => this.saveSettings());
     document.getElementById('cancel-settings').addEventListener('click', () => this.cancelChanges());
     document.getElementById('test-all').addEventListener('click', () => this.testAll());
-    document.getElementById('reset-settings').addEventListener('click', () => this.resetSettings());
 
     // Test buttons
     document.getElementById('test-nifi-connection').addEventListener('click', () => this.testNiFiConnection());
     document.getElementById('test-ai-connection').addEventListener('click', () => this.testAIConnection());
 
-    // Import/Export
-    document.getElementById('export-settings').addEventListener('click', () => this.exportSettings());
-    document.getElementById('import-file').addEventListener('change', (e) => this.importSettings(e));
+    // Import/Export - Removidos (botões não existem mais)
 
     // Prevent accidental close
     window.addEventListener('beforeunload', (e) => {
@@ -122,21 +129,25 @@ class SuperTabsOptions {
         return;
       }
 
-      // Save to storage
-      await SuperTabsStorage.updateSettings(this.settings);
+      // Save to Chrome Storage (extension storage)
+      await window.superTabsStorage.updateSettings(this.settings);
+      
+      // ALSO save to localStorage for direct access
+      this.saveToLocalStorage();
+      
       this.originalSettings = { ...this.settings };
       this.hasUnsavedChanges = false;
 
       // Update UI
       document.getElementById('save-settings').textContent = 'Salvar Configurações';
-      this.showMessage('Configurações salvas com sucesso!', 'success');
+      this.showMessage('Configurações salvas com sucesso! (Chrome Storage + localStorage)', 'success');
 
       // Notify other parts of extension
       chrome.runtime.sendMessage({ action: 'SETTINGS_UPDATED', settings: this.settings });
 
-      SuperTabsLogger.info('Settings saved successfully');
+      safeLog.info('Settings saved successfully to both Chrome Storage and localStorage');
     } catch (error) {
-      SuperTabsLogger.error('Failed to save settings', error);
+      safeLog.error('Failed to save settings', error);
       this.showMessage('Erro ao salvar configurações: ' + error.message, 'error');
     }
   }
@@ -145,7 +156,6 @@ class SuperTabsOptions {
     this.settings.nifiBaseUrl = document.getElementById('nifi-url').value.trim();
     this.settings.nifiUsername = document.getElementById('nifi-username').value.trim();
     this.settings.nifiPassword = document.getElementById('nifi-password').value;
-    this.settings.phi4ApiKey = document.getElementById('phi4-api-key').value.trim();
     this.settings.claudeApiKey = document.getElementById('claude-api-key').value.trim();
   }
 
@@ -157,11 +167,9 @@ class SuperTabsOptions {
       errors.push('URL do NiFi inválida');
     }
 
-    // Validate required fields if AI is configured
-    if (this.settings.phi4ApiKey || this.settings.claudeApiKey) {
-      if (this.settings.preferClaude && !this.settings.claudeApiKey) {
-        errors.push('Chave API do Claude é obrigatória quando Claude é preferido');
-      }
+    // Validate Claude API key if preferred
+    if (this.settings.preferClaude && !this.settings.claudeApiKey) {
+      errors.push('Chave API do Claude é obrigatória quando Claude é preferido');
     }
 
     return {
@@ -267,14 +275,9 @@ class SuperTabsOptions {
 
       this.collectFormValues();
 
-      const hasAnyKey = this.settings.phi4ApiKey || this.settings.claudeApiKey;
-      if (!hasAnyKey) {
-        throw new Error('Nenhuma chave API configurada');
-      }
-
-      // Mock test since we don't have real API endpoints yet
-      const preferredModel = (this.settings.preferClaude && this.settings.claudeApiKey) ? 'Claude' : 'PHI-4';
-      const hasRequiredKey = preferredModel === 'Claude' ? this.settings.claudeApiKey : this.settings.phi4ApiKey;
+      // Claude requires API key, PHI-4 doesn't
+      const preferredModel = this.settings.preferClaude ? 'Claude' : 'PHI-4';
+      const hasRequiredKey = preferredModel === 'Claude' ? this.settings.claudeApiKey : true; // PHI-4 sempre disponível
 
       if (!hasRequiredKey) {
         throw new Error(`Chave API do ${preferredModel} não configurada`);
@@ -308,7 +311,7 @@ class SuperTabsOptions {
 
   async exportSettings() {
     try {
-      const exportData = await SuperTabsStorage.exportSettings();
+      const exportData = await window.superTabsStorage.exportSettings();
       const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       
@@ -322,7 +325,7 @@ class SuperTabsOptions {
       
       this.showMessage('Configurações exportadas com sucesso!', 'success');
     } catch (error) {
-      SuperTabsLogger.error('Failed to export settings', error);
+      safeLog.error('Failed to export settings', error);
       this.showMessage('Erro ao exportar configurações: ' + error.message, 'error');
     }
   }
@@ -346,7 +349,7 @@ class SuperTabsOptions {
       }
 
       // Import settings
-      const success = await SuperTabsStorage.importSettings(importData);
+      const success = await window.superTabsStorage.importSettings(importData);
       if (success) {
         await this.loadSettings();
         this.updateUI();
@@ -355,7 +358,7 @@ class SuperTabsOptions {
         throw new Error('Falha ao importar configurações');
       }
     } catch (error) {
-      SuperTabsLogger.error('Failed to import settings', error);
+      safeLog.error('Failed to import settings', error);
       this.showMessage('Erro ao importar configurações: ' + error.message, 'error');
     } finally {
       // Clear file input
@@ -369,20 +372,136 @@ class SuperTabsOptions {
     }
 
     try {
-      await SuperTabsStorage.clearAllData();
-      this.settings = SuperTabsStorage.getDefaultSettings();
+      // Clear Chrome Storage
+      await window.superTabsStorage.clearAllData();
+      
+      // Clear localStorage
+      this.clearLocalStorage();
+      
+      this.settings = window.superTabsStorage.defaultSettings();
       this.originalSettings = { ...this.settings };
-      await SuperTabsStorage.updateSettings(this.settings);
+      await window.superTabsStorage.updateSettings(this.settings);
       
       this.updateUI();
       this.hasUnsavedChanges = false;
       document.getElementById('save-settings').textContent = 'Salvar Configurações';
       
-      this.showMessage('Configurações resetadas para os valores padrão', 'success');
-      SuperTabsLogger.info('Settings reset to defaults');
+      this.showMessage('Configurações resetadas (Chrome Storage + localStorage limpo)', 'success');
+      safeLog.info('Settings reset to defaults, localStorage cleared');
     } catch (error) {
-      SuperTabsLogger.error('Failed to reset settings', error);
+      safeLog.error('Failed to reset settings', error);
       this.showMessage('Erro ao resetar configurações: ' + error.message, 'error');
+    }
+  }
+
+  clearLocalStorage() {
+    try {
+      // Remove all SuperTabs items from localStorage
+      const keysToRemove = [
+        'supertabs-settings',
+        'supertabs-draft-settings',
+        'supertabs-nifi-url',
+        'supertabs-nifi-username',
+        'supertabs-nifi-password',
+        'supertabs-claude-api-key',
+        'supertabs-prefer-claude',
+        'supertabs-auto-open',
+        'supertabs-alignment-enabled',
+        'supertabs-expression-enabled',
+        'supertabs-debug-mode'
+      ];
+      
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+      safeLog.debug('localStorage cleared');
+    } catch (error) {
+      safeLog.error('Failed to clear localStorage', error);
+    }
+  }
+
+  viewLocalStorage() {
+    try {
+      // Collect all SuperTabs localStorage items
+      const localStorageData = {};
+      const superTabsKeys = [];
+      
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith('supertabs-')) {
+          superTabsKeys.push(key);
+          localStorageData[key] = localStorage.getItem(key);
+        }
+      }
+      
+      if (superTabsKeys.length === 0) {
+        alert('Nenhum dado SuperTabs encontrado no localStorage');
+        return;
+      }
+      
+      // Create modal to display localStorage
+      const modal = document.createElement('div');
+      modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.7);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      `;
+      
+      const content = document.createElement('div');
+      content.style.cssText = `
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        max-width: 800px;
+        max-height: 80vh;
+        overflow: auto;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      `;
+      
+      content.innerHTML = `
+        <h2 style="margin-top: 0; color: var(--nifi-primary-blue);">
+          🔍 localStorage SuperTabs
+        </h2>
+        <p style="color: var(--nifi-gray-medium); margin-bottom: 20px;">
+          Total de itens: <strong>${superTabsKeys.length}</strong>
+        </p>
+        <pre style="
+          background: var(--nifi-gray-lighter);
+          padding: 15px;
+          border-radius: 4px;
+          overflow: auto;
+          font-size: 12px;
+          max-height: 400px;
+        ">${JSON.stringify(localStorageData, null, 2)}</pre>
+        <div style="margin-top: 20px; display: flex; gap: 10px;">
+          <button class="supertabs-btn primary" onclick="this.closest('div').parentElement.parentElement.remove()">
+            Fechar
+          </button>
+          <button class="supertabs-btn" onclick="navigator.clipboard.writeText(this.previousElementSibling.previousElementSibling.textContent).then(() => alert('Copiado!'))">
+            Copiar JSON
+          </button>
+        </div>
+      `;
+      
+      modal.appendChild(content);
+      document.body.appendChild(modal);
+      
+      // Close on click outside
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.remove();
+        }
+      });
+      
+      safeLog.info('localStorage viewer opened', { items: superTabsKeys.length });
+    } catch (error) {
+      safeLog.error('Failed to view localStorage', error);
+      alert('Erro ao visualizar localStorage: ' + error.message);
     }
   }
 
@@ -391,6 +510,69 @@ class SuperTabsOptions {
       this.collectFormValues();
       localStorage.setItem('supertabs-draft-settings', JSON.stringify(this.settings));
     }
+  }
+
+  saveToLocalStorage() {
+    try {
+      // Save complete settings to localStorage
+      const localStorageData = {
+        settings: this.settings,
+        timestamp: new Date().toISOString(),
+        version: '1.0.0'
+      };
+      
+      localStorage.setItem('supertabs-settings', JSON.stringify(localStorageData));
+      
+      // Also save individual items for easy access
+      localStorage.setItem('supertabs-nifi-url', this.settings.nifiBaseUrl || '');
+      localStorage.setItem('supertabs-nifi-username', this.settings.nifiUsername || '');
+      localStorage.setItem('supertabs-nifi-password', this.settings.nifiPassword || '');
+      localStorage.setItem('supertabs-claude-api-key', this.settings.claudeApiKey || '');
+      localStorage.setItem('supertabs-prefer-claude', this.settings.preferClaude ? 'true' : 'false');
+      localStorage.setItem('supertabs-auto-open', this.settings.autoOpen ? 'true' : 'false');
+      localStorage.setItem('supertabs-alignment-enabled', this.settings.alignmentEnabled ? 'true' : 'false');
+      localStorage.setItem('supertabs-expression-enabled', this.settings.expressionLanguageEnabled ? 'true' : 'false');
+      localStorage.setItem('supertabs-debug-mode', this.settings.debugMode ? 'true' : 'false');
+      
+      safeLog.debug('Settings saved to localStorage');
+    } catch (error) {
+      safeLog.error('Failed to save to localStorage', error);
+    }
+  }
+
+  loadFromLocalStorage() {
+    try {
+      const localStorageData = localStorage.getItem('supertabs-settings');
+      if (localStorageData) {
+        const data = JSON.parse(localStorageData);
+        if (data.settings) {
+          safeLog.info('Settings loaded from localStorage', data.timestamp);
+          return data.settings;
+        }
+      }
+      
+      // Fallback: try to load individual items
+      const individualSettings = {
+        nifiBaseUrl: localStorage.getItem('supertabs-nifi-url') || '',
+        nifiUsername: localStorage.getItem('supertabs-nifi-username') || '',
+        nifiPassword: localStorage.getItem('supertabs-nifi-password') || '',
+        claudeApiKey: localStorage.getItem('supertabs-claude-api-key') || '',
+        preferClaude: localStorage.getItem('supertabs-prefer-claude') === 'true',
+        autoOpen: localStorage.getItem('supertabs-auto-open') === 'true',
+        alignmentEnabled: localStorage.getItem('supertabs-alignment-enabled') === 'true',
+        expressionLanguageEnabled: localStorage.getItem('supertabs-expression-enabled') === 'true',
+        debugMode: localStorage.getItem('supertabs-debug-mode') === 'true'
+      };
+      
+      // Check if any settings exist
+      if (Object.values(individualSettings).some(v => v !== '' && v !== false)) {
+        safeLog.info('Settings loaded from individual localStorage items');
+        return individualSettings;
+      }
+    } catch (error) {
+      safeLog.error('Failed to load from localStorage', error);
+    }
+    return null;
   }
 
   loadDraft() {
@@ -429,20 +611,6 @@ class SuperTabsOptions {
         messageDiv.parentNode.removeChild(messageDiv);
       }
     });
-  }
-}
-
-// Global functions for HTML
-function togglePassword(inputId) {
-  const input = document.getElementById(inputId);
-  const button = input.parentNode.querySelector('.password-toggle');
-  
-  if (input.type === 'password') {
-    input.type = 'text';
-    button.textContent = '🙈';
-  } else {
-    input.type = 'password';
-    button.textContent = '👁️';
   }
 }
 

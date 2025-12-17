@@ -52,7 +52,6 @@ class SuperTabsPopup {
         alignmentEnabled: true,
         expressionLanguageEnabled: true,
         debugMode: false,
-        phi4ApiKey: '',
         claudeApiKey: '',
         preferClaude: false
       };
@@ -105,36 +104,48 @@ class SuperTabsPopup {
   }
 
   updateNiFiStatus() {
-    const statusElement = document.getElementById('nifi-status');
-    const dot = statusElement.querySelector('.status-dot');
-    const text = statusElement.querySelector('span');
+    const statusIcon = document.getElementById('nifi-status-icon');
+    const statusItem = document.getElementById('nifi-status-item');
 
     if (this.isNiFiPage) {
-      statusElement.className = 'status-indicator connected';
-      dot.className = 'status-dot connected';
-      text.textContent = 'Conectado ao NiFi';
+      // Conectado
+      statusIcon.className = 'status-icon connected';
+      statusIcon.innerHTML = '<i class="fa fa-check-circle"></i>';
+      statusItem.title = 'Conectado ao NiFi';
     } else {
-      statusElement.className = 'status-indicator inactive';
-      dot.className = 'status-dot inactive';
-      text.textContent = 'Abra uma página do NiFi';
+      // Desconectado
+      statusIcon.className = 'status-icon disconnected';
+      statusIcon.innerHTML = '<i class="fa fa-times-circle"></i>';
+      statusItem.title = 'Abra uma página do NiFi';
     }
   }
 
   updateAIStatus() {
-    const statusElement = document.getElementById('ai-status');
-    const dot = statusElement.querySelector('.status-dot');
-    const text = statusElement.querySelector('span');
+    const statusIcon = document.getElementById('ai-status-icon');
+    const statusItem = document.getElementById('ai-status-item');
 
-    const hasAIKey = this.settings.phi4ApiKey || this.settings.claudeApiKey;
+    // Verifica se Claude está ativo como principal E com chave
+    const claudeFullyActive = this.settings.preferClaude && this.settings.claudeApiKey;
+    
+    // PHI-4 sempre disponível (não precisa de chave)
+    const phi4Available = true;
 
-    if (hasAIKey) {
-      statusElement.className = 'status-indicator connected';
-      dot.className = 'status-dot connected';
-      text.textContent = `IA configurada (${this.settings.preferClaude && this.settings.claudeApiKey ? 'Claude' : 'PHI-4'})`;
+    if (claudeFullyActive) {
+      // Claude ativo e configurado - Status CONECTADO (verde)
+      statusIcon.className = 'status-icon connected';
+      statusIcon.innerHTML = '<i class="fa fa-check-circle"></i>';
+      statusItem.title = 'IA configurada (Claude Sonnet 4.5)';
+    } else if (phi4Available) {
+      // PHI-4 disponível (sempre) - Status CONECTADO (verde)
+      statusIcon.className = 'status-icon connected';
+      statusIcon.innerHTML = '<i class="fa fa-check-circle"></i>';
+      const hasClaudeKey = this.settings.claudeApiKey ? ' (Claude disponível)' : '';
+      statusItem.title = `IA configurada (PHI-4${hasClaudeKey})`;
     } else {
-      statusElement.className = 'status-indicator inactive';
-      dot.className = 'status-dot inactive';
-      text.textContent = 'Configure as chaves da IA';
+      // Nenhuma IA disponível - Status DESCONECTADO (vermelho) - caso impossível
+      statusIcon.className = 'status-icon disconnected';
+      statusIcon.innerHTML = '<i class="fa fa-times-circle"></i>';
+      statusItem.title = 'IA não disponível';
     }
   }
 
@@ -162,6 +173,13 @@ class SuperTabsPopup {
         button.style.pointerEvents = this.isNiFiPage ? 'auto' : 'none';
       }
     });
+
+    // Settings button is always enabled
+    const settingsBtn = document.getElementById('open-settings');
+    if (settingsBtn) {
+      settingsBtn.style.opacity = '1';
+      settingsBtn.style.pointerEvents = 'auto';
+    }
   }
 
   setupEventListeners() {
@@ -176,11 +194,6 @@ class SuperTabsPopup {
     document.getElementById('open-expression-generator')?.addEventListener('click', () => this.openExpressionGenerator());
     document.getElementById('align-components')?.addEventListener('click', () => this.alignComponents());
     document.getElementById('open-settings')?.addEventListener('click', () => this.openSettings());
-
-    // Footer links
-    document.getElementById('open-full-settings')?.addEventListener('click', () => this.openFullSettings());
-    document.getElementById('view-logs')?.addEventListener('click', () => this.viewLogs());
-    document.getElementById('export-settings')?.addEventListener('click', () => this.exportSettings());
   }
 
   setupToggleListener(toggleId, settingKey) {
@@ -260,7 +273,7 @@ class SuperTabsPopup {
 
     try {
       await chrome.tabs.sendMessage(this.currentTab.id, {
-        action: 'OPEN_EXPRESSION_GENERATOR'
+        action: 'OPEN_EXPRESSION_LANGUAGE_GENERATOR'
       });
       window.close();
     } catch (error) {
@@ -302,13 +315,6 @@ class SuperTabsPopup {
     }
   }
 
-  openFullSettings() {
-    if (this.isExtensionContext) {
-      chrome.runtime.openOptionsPage();
-      window.close();
-    }
-  }
-
   async viewLogs() {
     try {
       let logs = '';
@@ -340,40 +346,6 @@ class SuperTabsPopup {
         console.error('[SuperTabs] Failed to export logs:', error);
       }
       this.showTemporaryMessage('Erro ao exportar logs', 'error');
-    }
-  }
-
-  async exportSettings() {
-    try {
-      let exportData = '';
-      if (typeof superTabsStorage !== 'undefined') {
-        exportData = await superTabsStorage.exportSettings();
-      } else {
-        exportData = JSON.stringify(this.settings, null, 2);
-      }
-      
-      if (this.isExtensionContext) {
-        const blob = new Blob([exportData], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        
-        await chrome.downloads.download({
-          url: url,
-          filename: `supertabs-settings-${new Date().toISOString().slice(0, 19)}.json`
-        });
-        
-        this.showTemporaryMessage('Configurações exportadas', 'success');
-      } else {
-        // Fallback for testing
-        console.log('[SuperTabs] Export settings:', exportData);
-        this.showTemporaryMessage('Configurações mostradas no console', 'info');
-      }
-    } catch (error) {
-      if (typeof SuperTabsLogger !== 'undefined') {
-        SuperTabsLogger.error('Failed to export settings', error);
-      } else {
-        console.error('[SuperTabs] Failed to export settings:', error);
-      }
-      this.showTemporaryMessage('Erro ao exportar configurações', 'error');
     }
   }
 

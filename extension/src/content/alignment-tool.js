@@ -649,6 +649,320 @@ class SuperTabsAlignmentTool {
   }
 
   async applyPositions(positions) {
+    // Try DOM-based movement first (more reliable), fallback to API
+    try {
+      await this.applyPositionsViaDom(positions);
+      SuperTabsLogger.info('AlignmentTool', 'Positions applied via DOM manipulation');
+    } catch (domError) {
+      SuperTabsLogger.warn('AlignmentTool', 'DOM manipulation failed, trying API', domError);
+      await this.applyPositionsViaApi(positions);
+    }
+  }
+
+  /**
+   * Move components by directly manipulating the DOM and triggering NiFi's drag system
+   * This is more reliable than API calls and works even when components are running
+   */
+  async applyPositionsViaDom(positions) {
+    for (const position of positions) {
+      const component = this.selectedComponents.find(c => c.id === position.id);
+      if (!component) continue;
+
+      try {
+        // Find the component element in the DOM
+        const element = component.element || 
+                       document.querySelector(`[data-id="${component.id}"]`) ||
+                       document.querySelector(`g.processor[id="${component.id}"]`) ||
+                       document.querySelector(`g.process-group[id="${component.id}"]`) ||
+                       document.getElementById(component.id);
+        
+        if (!element) {
+          SuperTabsLogger.warn('AlignmentTool', `Element not found for component ${component.id}`);
+          continue;
+        }
+
+        // Method 1: Direct transform manipulation (SVG elements)
+        await this.moveSvgElement(element, position.x, position.y);
+
+        // Method 2: Simulate drag-and-drop for better NiFi integration
+        await this.simulateDragToPosition(element, position.x, position.y);
+
+        SuperTabsLogger.debug('AlignmentTool', `Moved component ${component.id} to (${position.x}, ${position.y})`);
+
+        // Small delay to allow NiFi to process the change
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+      } catch (error) {
+        SuperTabsLogger.warn('AlignmentTool', `Failed to move component ${component.id} via DOM`, error);
+        throw error; // Re-throw to trigger API fallback
+      }
+    }
+
+    // Trigger canvas redraw/refresh
+    this.refreshNiFiCanvas();
+  }
+
+  /**
+   * Move SVG element by updating its transform attribute
+   */
+  moveSvgElement(element, x, y) {
+    try {
+      // Get current transform or create new one
+      const currentTransform = element.getAttribute('transform') || '';
+      
+      // Extract current position if exists
+      const translateMatch = currentTransform.match(/translate\(([^,]+),\s*([^)]+)\)/);
+      const oldX = translateMatch ? parseFloat(translateMatch[1]) : 0;
+      const oldY = translateMatch ? parseFloat(translateMatch[2]) : 0;
+      
+      // Build new transform preserving other transformations
+      let newTransform;
+      if (translateMatch) {
+        newTransform = currentTransform.replace(/translate\([^)]+\)/, `translate(${x}, ${y})`);
+      } else {
+        newTransform = `translate(${x}, ${y})${currentTransform ? ' ' + currentTransform : ''}`;
+      }
+
+      // Apply new transform
+      element.setAttribute('transform', newTransform);
+
+      // Update data attributes
+      element.setAttribute('data-x', x);
+      element.setAttribute('data-y', y);
+
+      // Update position on internal D3 data binding if available
+      if (element.__data__) {
+        element.__data__.position = { x, y };
+        // Also update component field if it exists
+        if (element.__data__.component) {
+          element.__data__.component.position = { x, y };
+        }
+      }
+
+      // Trigger NiFi's position update events
+      this.triggerPositionUpdateEvents(element, oldX, oldY, x, y);
+
+      return true;
+    } catch (error) {
+      SuperTabsLogger.warn('AlignmentTool', 'Failed to move SVG element', error);
+      return false;
+    }
+  }
+
+  /**
+   * Trigger all necessary events to notify NiFi of position changes
+   */
+  triggerPositionUpdateEvents(element, oldX, oldY, newX, newY) {
+    try {
+      const componentId = element.id || element.getAttribute('id');
+      
+      // Event 1: Standard DOM change event
+      element.dispatchEvent(new Event('change', { bubbles: true }));
+      
+      // Event 2: Custom position changed event (NiFi may listen to this)
+      element.dispatchEvent(new CustomEvent('positionChanged', {
+        bubbles: true,
+        detail: { 
+          id: componentId,
+          oldPosition: { x: oldX, y: oldY },
+          newPosition: { x: newX, y: newY },
+          deltaX: newX - oldX,
+          deltaY: newY - oldY
+        }
+      }));
+
+      // Event 3: Component modified event
+      element.dispatchEvent(new CustomEvent('componentModified', {
+        bubbles: true,
+        detail: { 
+          type: 'position',
+          componentId: componentId,
+          position: { x: newX, y: newY }
+        }
+      }));
+
+      // Event 4: Dispatch on document for global listeners
+      document.dispatchEvent(new CustomEvent('nifi:componentMoved', {
+        detail: {
+          componentId: componentId,
+          position: { x: newX, y: newY },
+          previousPosition: { x: oldX, y: oldY }
+        }
+      }));
+
+      // Event 5: Try to call NiFi's internal update functions if available
+      if (window.nf) {
+        // Try NiFi's position update handler
+        if (typeof window.nf.CanvasUtils?.updateComponentPosition === 'function') {
+          window.nf.CanvasUtils.updateComponentPosition(componentId, { x: newX, y: newY });
+        }
+        
+        // Try to refresh the specific component
+        if (typeof window.nf.Canvas?.reload === 'function') {
+          window.nf.Canvas.reload({ id: componentId });
+        }
+      }
+
+      SuperTabsLogger.debug('AlignmentTool', `Position events dispatched for ${componentId}`);
+    } catch (error) {
+      SuperTabsLogger.debug('AlignmentTool', 'Failed to dispatch some events', error);
+    }
+  }
+
+  /**
+   * Simulate drag-and-drop to move element (triggers NiFi's internal position update)
+   */
+  async simulateDragToPosition(element, targetX, targetY) {
+    try {
+      // Get current position
+      const currentTransform = element.getAttribute('transform') || '';
+      const translateMatch = currentTransform.match(/translate\(([^,]+),\s*([^)]+)\)/);
+      const currentX = translateMatch ? parseFloat(translateMatch[1]) : 0;
+      const currentY = translateMatch ? parseFloat(translateMatch[2]) : 0;
+
+      // Calculate deltas
+      const deltaX = targetX - currentX;
+      const deltaY = targetY - currentY;
+
+      // Skip if already at target position
+      if (Math.abs(deltaX) < 1 && Math.abs(deltaY) < 1) {
+        return true;
+      }
+
+      // Get element bounding box for accurate event positioning
+      const bbox = element.getBBox ? element.getBBox() : element.getBoundingClientRect();
+      const centerX = currentX + (bbox.width || 0) / 2;
+      const centerY = currentY + (bbox.height || 0) / 2;
+
+      // Get the canvas SVG for coordinate conversion
+      const canvas = document.querySelector('svg#canvas, svg.canvas');
+      const canvasRect = canvas ? canvas.getBoundingClientRect() : null;
+
+      // Convert SVG coordinates to screen coordinates if possible
+      let screenX = centerX;
+      let screenY = centerY;
+      if (canvasRect) {
+        screenX = canvasRect.left + centerX;
+        screenY = canvasRect.top + centerY;
+      }
+
+      // Event 1: MouseDown (start drag)
+      const mouseDownEvent = new MouseEvent('mousedown', {
+        bubbles: true,
+        cancelable: true,
+        view: window,
+        clientX: screenX,
+        clientY: screenY,
+        screenX: screenX,
+        screenY: screenY,
+        button: 0,
+        buttons: 1
+      });
+      element.dispatchEvent(mouseDownEvent);
+
+      // Dispatch on document too (NiFi may listen globally)
+      document.dispatchEvent(new MouseEvent('mousedown', {
+        bubbles: true,
+        cancelable: true,
+        view: window,
+        clientX: screenX,
+        clientY: screenY,
+        button: 0,
+        buttons: 1
+      }));
+
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      // Event 2: Drag event (if supported)
+      try {
+        const dragEvent = new DragEvent('drag', {
+          bubbles: true,
+          cancelable: true,
+          view: window,
+          clientX: screenX + deltaX,
+          clientY: screenY + deltaY
+        });
+        element.dispatchEvent(dragEvent);
+      } catch (e) {
+        // DragEvent may not be supported in all contexts
+      }
+
+      // Event 3: MouseMove (simulate dragging)
+      const mouseMoveEvent = new MouseEvent('mousemove', {
+        bubbles: true,
+        cancelable: true,
+        view: window,
+        clientX: screenX + deltaX,
+        clientY: screenY + deltaY,
+        screenX: screenX + deltaX,
+        screenY: screenY + deltaY,
+        button: 0,
+        buttons: 1,
+        movementX: deltaX,
+        movementY: deltaY
+      });
+      element.dispatchEvent(mouseMoveEvent);
+      
+      // Dispatch on document
+      document.dispatchEvent(new MouseEvent('mousemove', {
+        bubbles: true,
+        cancelable: true,
+        view: window,
+        clientX: screenX + deltaX,
+        clientY: screenY + deltaY,
+        button: 0,
+        buttons: 1
+      }));
+
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      // Event 4: MouseUp (end drag)
+      const mouseUpEvent = new MouseEvent('mouseup', {
+        bubbles: true,
+        cancelable: true,
+        view: window,
+        clientX: screenX + deltaX,
+        clientY: screenY + deltaY,
+        screenX: screenX + deltaX,
+        screenY: screenY + deltaY,
+        button: 0,
+        buttons: 0
+      });
+      element.dispatchEvent(mouseUpEvent);
+
+      // Dispatch on document
+      document.dispatchEvent(new MouseEvent('mouseup', {
+        bubbles: true,
+        cancelable: true,
+        view: window,
+        clientX: screenX + deltaX,
+        clientY: screenY + deltaY,
+        button: 0
+      }));
+
+      // Event 5: Click event (some handlers may expect this)
+      const clickEvent = new MouseEvent('click', {
+        bubbles: true,
+        cancelable: true,
+        view: window,
+        clientX: screenX + deltaX,
+        clientY: screenY + deltaY,
+        button: 0
+      });
+      element.dispatchEvent(clickEvent);
+
+      SuperTabsLogger.debug('AlignmentTool', `Simulated drag for ${element.id || 'component'}`);
+      return true;
+    } catch (error) {
+      SuperTabsLogger.warn('AlignmentTool', 'Failed to simulate drag', error);
+      return false;
+    }
+  }
+
+  /**
+   * Fallback method: Update positions via NiFi REST API
+   */
+  async applyPositionsViaApi(positions) {
     if (!this.nifiApi) {
       throw new Error('NiFi API not available');
     }
@@ -676,6 +990,189 @@ class SuperTabsAlignmentTool {
         
       } catch (error) {
         SuperTabsLogger.warn('AlignmentTool', `Failed to update position for component ${component.id}`, error);
+      }
+    }
+  }
+
+  /**
+   * Refresh NiFi canvas to ensure visual updates are rendered
+   */
+  refreshNiFiCanvas() {
+    try {
+      SuperTabsLogger.debug('AlignmentTool', 'Refreshing NiFi canvas...');
+      
+      // Find the canvas element
+      const canvas = document.querySelector('svg#canvas, svg.canvas, #canvas-container svg');
+      if (!canvas) {
+        SuperTabsLogger.warn('AlignmentTool', 'Canvas element not found');
+        return;
+      }
+
+      // Method 1: Dispatch refresh event on canvas
+      canvas.dispatchEvent(new Event('refresh', { bubbles: true }));
+      canvas.dispatchEvent(new CustomEvent('canvasRefresh', { bubbles: true }));
+
+      // Method 2: Call NiFi's global refresh functions if available
+      if (window.nf) {
+        // Try Canvas refresh
+        if (typeof window.nf.Canvas?.refresh === 'function') {
+          window.nf.Canvas.refresh();
+          SuperTabsLogger.debug('AlignmentTool', 'Called nf.Canvas.refresh()');
+        }
+        
+        // Try Canvas reload
+        if (typeof window.nf.Canvas?.reload === 'function') {
+          window.nf.Canvas.reload();
+          SuperTabsLogger.debug('AlignmentTool', 'Called nf.Canvas.reload()');
+        }
+        
+        // Try CanvasUtils refresh
+        if (typeof window.nf.CanvasUtils?.refreshCanvas === 'function') {
+          window.nf.CanvasUtils.refreshCanvas();
+          SuperTabsLogger.debug('AlignmentTool', 'Called nf.CanvasUtils.refreshCanvas()');
+        }
+
+        // Try to refresh connections (bendpoints may need updating)
+        if (typeof window.nf.Connection?.refresh === 'function') {
+          window.nf.Connection.refresh();
+          SuperTabsLogger.debug('AlignmentTool', 'Called nf.Connection.refresh()');
+        }
+
+        // Try Birdseye refresh (minimap)
+        if (typeof window.nf.Birdseye?.refresh === 'function') {
+          window.nf.Birdseye.refresh();
+          SuperTabsLogger.debug('AlignmentTool', 'Called nf.Birdseye.refresh()');
+        }
+      }
+
+      // Method 3: Force D3 redraw if available
+      if (window.d3) {
+        try {
+          // Select all processors and force update
+          const selection = window.d3.selectAll('g.processor, g.process-group');
+          if (selection && typeof selection.call === 'function') {
+            // Trigger D3 update cycle
+            selection.each(function() {
+              const element = this;
+              const data = element.__data__;
+              if (data) {
+                // Re-bind data to force update
+                window.d3.select(element).datum(data);
+              }
+            });
+            SuperTabsLogger.debug('AlignmentTool', 'Forced D3 update cycle');
+          }
+        } catch (d3Error) {
+          SuperTabsLogger.debug('AlignmentTool', 'D3 update failed', d3Error);
+        }
+      }
+
+      // Method 4: Force browser reflow (layout recalculation)
+      void canvas.offsetHeight; // Force reflow
+      void canvas.offsetWidth;
+      canvas.getBoundingClientRect(); // Force layout
+      
+      // Method 5: Trigger repaint by changing opacity temporarily
+      const originalOpacity = canvas.style.opacity;
+      canvas.style.opacity = '0.9999';
+      setTimeout(() => {
+        canvas.style.opacity = originalOpacity || '';
+      }, 0);
+
+      // Method 6: Dispatch window resize to trigger responsive updates
+      window.dispatchEvent(new Event('resize'));
+
+      // Method 7: Update all connection paths if they exist
+      this.updateConnectionPaths();
+
+      SuperTabsLogger.info('AlignmentTool', 'Canvas refresh completed');
+
+      // Try to save positions to backend (non-blocking)
+      this.savePositionsToBackend().catch(error => {
+        SuperTabsLogger.debug('AlignmentTool', 'Background save failed (expected if using DOM-only mode)', error);
+      });
+      
+    } catch (error) {
+      SuperTabsLogger.warn('AlignmentTool', 'Canvas refresh error', error);
+    }
+  }
+
+  /**
+   * Update connection paths to reflect new component positions
+   */
+  updateConnectionPaths() {
+    try {
+      // Find all connection paths
+      const connections = document.querySelectorAll('g.connection, path.connector, .connection-path');
+      
+      connections.forEach(connection => {
+        // Trigger connection update event
+        connection.dispatchEvent(new Event('refresh', { bubbles: true }));
+        
+        // Try to call NiFi's connection update if available
+        const connectionId = connection.id || connection.getAttribute('id');
+        if (connectionId && window.nf?.Connection?.refresh) {
+          try {
+            window.nf.Connection.refresh(connectionId);
+          } catch (e) {
+            // Silent fail
+          }
+        }
+      });
+
+      // Also trigger global connection refresh
+      if (window.nf?.Connection?.refreshConnections) {
+        window.nf.Connection.refreshConnections();
+      }
+
+      SuperTabsLogger.debug('AlignmentTool', `Updated ${connections.length} connection paths`);
+    } catch (error) {
+      SuperTabsLogger.debug('AlignmentTool', 'Connection path update failed', error);
+    }
+  }
+
+  /**
+   * Try to save the current positions to NiFi backend (asynchronous, non-blocking)
+   * This ensures positions persist even after DOM manipulation
+   */
+  async savePositionsToBackend() {
+    if (!this.selectedComponents || this.selectedComponents.length === 0) {
+      return;
+    }
+
+    // Collect current positions from DOM
+    const positions = [];
+    for (const component of this.selectedComponents) {
+      try {
+        const element = component.element || 
+                       document.querySelector(`g.processor[id="${component.id}"]`) ||
+                       document.querySelector(`g.process-group[id="${component.id}"]`) ||
+                       document.getElementById(component.id);
+        
+        if (element) {
+          const transform = element.getAttribute('transform') || '';
+          const match = transform.match(/translate\(([^,]+),\s*([^)]+)\)/);
+          if (match) {
+            positions.push({
+              id: component.id,
+              x: parseFloat(match[1]),
+              y: parseFloat(match[2])
+            });
+          }
+        }
+      } catch (error) {
+        SuperTabsLogger.debug('AlignmentTool', `Failed to extract position for ${component.id}`, error);
+      }
+    }
+
+    // Try to save via API (without throwing errors)
+    if (positions.length > 0) {
+      try {
+        await this.applyPositionsViaApi(positions);
+        SuperTabsLogger.info('AlignmentTool', 'Positions successfully saved to backend');
+      } catch (error) {
+        // Fail silently - DOM changes are already applied
+        SuperTabsLogger.debug('AlignmentTool', 'Backend save failed (using DOM-only mode)', error);
       }
     }
   }

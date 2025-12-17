@@ -61,10 +61,13 @@ if (typeof window.SuperTabsLoggerClass === 'undefined') {
         const prefix = `[SuperTabs ${level.toUpperCase()}]`;
         const style = this.getLogStyle(level);
         
+        // Map level to console method (debug -> log)
+        const consoleMethod = level === 'debug' ? 'log' : level;
+        
         if (data) {
-          console[level](`%c${prefix} ${message}`, style, data);
+          console[consoleMethod](`%c${prefix} ${message}`, style, data);
         } else {
-          console[level](`%c${prefix} ${message}`, style);
+          console[consoleMethod](`%c${prefix} ${message}`, style);
         }
       }
 
